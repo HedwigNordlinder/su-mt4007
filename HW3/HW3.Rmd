@@ -1,0 +1,282 @@
+# IRIS data
+
+We will investigate the relationship between sepal and petal dimensions using a scatterplot. We begin by loading necessary libraries and data
+
+```{r}
+library(ggplot2)
+library(patchwork)
+iris_data <- read.csv("IRIS.csv")
+
+colour_values =  c("Iris-setosa" = "blue", "Iris-versicolor" = "green", "Iris-virginica" = "red")
+
+length_plot <- ggplot(data = iris_data, aes(x = sepal_length, y = petal_length, col = species)) + scale_color_manual(values = colour_values) + geom_point(show.legend = FALSE) + theme_classic()
+
+width_plot <- ggplot(data = iris_data, aes(x = sepal_width, y = petal_width, col = species)) + scale_color_manual(values = colour_values) + geom_point() + theme_classic()
+length_plot + width_plot
+```
+
+By visual inspection of the figure it looks like there is a linear relationship between sepal length and petal length for Iris-virginica and Iris-versicolor, and no relationship for Iris-setosa. The same holds for sepal width and petal width, except the relationship looks weaker.
+
+We will now investigate the distributions of these four variables
+
+```{r}
+
+sepal_width_histogram <- ggplot(data = iris_data, aes(x = species, y = sepal_width,fill=species)) + geom_boxplot(show.legend = FALSE)
+sepal_length_histogram <- ggplot(data = iris_data, aes(x = species, y = sepal_length,fill=species)) + geom_boxplot(show.legend = FALSE)
+petal_width_histogram <- ggplot(data = iris_data, aes(x = species, y = petal_width,fill=species)) + geom_boxplot(show.legend = FALSE)
+petal_length_histogram <- ggplot(data = iris_data, aes(x = species, y = petal_length,fill=species)) + geom_boxplot(show.legend = FALSE)
+(sepal_width_histogram + sepal_length_histogram) / (petal_width_histogram + petal_length_histogram)
+
+```
+
+From this figure we conclude that iris-setosa has lower variance in petal width and petal length
+
+We will now generate a pairs plot for all variables
+
+```{r}
+plots <- c()
+for(i in 1:4) {
+  local_plot <- ggplot()
+  local_plots <- c()
+  for(j in 1:4) {
+    
+    x_name = names(iris_data)[i]
+    y_name = names(iris_data)[j]
+    base_plot <- ggplot()
+    if(i == j) {
+        base_plot <- ggplot(data = iris_data, aes(y = .data[[y_name]], col = species)) +  
+          geom_density(alpha = 0.7, show.legend = FALSE) + coord_flip()
+    }
+    else {
+          base_plot <- ggplot(data = iris_data, aes(x = .data[[x_name]], y = .data[[y_name]], col =             species)) + geom_point(show.legend = FALSE)
+    }
+    local_plots[[j]] <- base_plot
+  }
+  local_plot <- plot_grid(local_plots[[1]], local_plots[[2]], local_plots[[3]], local_plots[[4]], ncol = 4)
+  plots[[i]] <- local_plot
+}
+plot <- plot_grid(plots[[1]], plots[[2]], plots[[3]], plots[[4]], nrow = 4)
+plot
+```
+
+From this plot we can draw the conclusion that sepal length and width has a positive linear relationship for all species, petal length and petal width has a general linear trend that looks similar across all species and that the variance of petal length and width is low for Iris Setosa
+
+# Artportalen
+
+We will begin by loading data from Artportalen
+
+```{r}
+library(tidyverse)
+artportalen <- read.csv("artportalen.csv")
+
+artportalen <- artportalen %>% mutate(Antal = ifelse(is.na(as.numeric(Antal)),1, as.numeric(Antal)))
+
+species_counts <- artportalen %>% group_by(Artnamn) %>% summarise(count = sum(Antal))
+sorted_species_counts <- species_counts[order(-species_counts$count),]
+most_common_species <- sorted_species_counts[1:3,]
+rarest_species <- sorted_species_counts[sorted_species_counts$count == 1,]
+most_common_species
+rarest_species
+
+monthly_distribution <- artportalen %>% filter(Artnamn %in% most_common_species$Artnamn) %>% mutate(month = format(as.Date(Startdatum), "%m")) %>% group_by(Artnamn, month) %>% summarise(count = n())
+
+blames_distr <- monthly_distribution %>% filter(Artnamn == "Grönsiska")
+koltrast_distr <- monthly_distribution %>% filter(Artnamn == "Sothöna")
+talgoxe_distr <- monthly_distribution %>% filter(Artnamn == "Gräsand")
+blames_plot <- ggplot(blames_distr, aes(x = month, y = count)) + geom_bar(stat="identity")
+koltrast_plot <- ggplot(koltrast_distr, aes(x = month, y = count)) + geom_bar(stat="identity")
+talgoxe_plot <- ggplot(talgoxe_distr, aes(x = month, y = count)) + geom_bar(stat="identity")
+plot_grid(blames_plot, koltrast_plot, talgoxe_plot, ncol = 3)
+```
+
+Grönsiska, Sothöna and Gräsand are the three most common species. The rarest species are seen in the table rarest_species.
+
+Now we will come up with three questions of our own. One interesting question would be: What distribution do the three most common species follow?
+
+```{r}
+
+sothona <- artportalen[artportalen$Artnamn == "Sothöna",]$Antal
+gronsiska <- artportalen[artportalen$Artnamn == "Grönsiska",]$Antal
+grasand <- artportalen[artportalen$Artnamn == "Gräsand",]$Antal
+hist(sothona, prob = TRUE)
+k = 1:200
+pdf = dpois(k,mean(sothona))
+points(k, pdf, col="red")
+
+hist(gronsiska, prob = TRUE)
+k = 1:200
+pdf = dpois(k,mean(gronsiska))
+points(k, pdf, col="red")
+
+hist(grasand, prob = TRUE)
+k = 1:200
+pdf = dpois(k,mean(grasand))
+points(k, pdf, col="red")
+```
+
+A Poission distribution is a poor fit for Sothöna, Grönsiska, Gräsand, probably since there is a large concentration at n = 1 for observations and a large tail. We will also investigate which species are the most overrepresented in Stockholm
+
+```{r}
+stockholm_species_counts <- artportalen %>% filter(Kommun == "Stockholm") %>% group_by(Artnamn) %>% summarise(stockholm_count = sum(Antal))
+merged_frame <- merge(species_counts, stockholm_species_counts)
+merged_frame$stockholm_share <- merged_frame$stockholm_count / merged_frame$count
+merged_frame <- merged_frame %>% filter(count != 1)
+sort_stockholm_share <- merged_frame[order(-merged_frame$stockholm_share),]
+sort_stockholm_share[1:40,]
+```
+
+There are a lot of species that have only been observed in Stockholm.
+
+Finally we check if Benfords law is a good fit for total counts
+
+```{r}
+
+sorted_species_counts$first_digit <- floor(sorted_species_counts$count / 10^(floor(log10(sorted_species_counts$count))))
+hist(sorted_species_counts$first_digit)
+
+```
+
+We do not obtain a Benford distribution, despite the values having a range spanning several orders of magnitude. Perhaps people hap-hazardly just put in "1000" for "A huge flock"
+
+# Stroke data
+
+We begin by loading stroke data
+
+```{r}
+stroke_data <- read.csv("stroke-data.csv")
+head(stroke_data)
+```
+
+```{r}
+nrow(stroke_data)
+nrow(stroke_data[stroke_data$gender == "Other",])
+```
+
+Our dataset is quite large (n = 5110) observations. We have several categorical predictors of our variable of interest, some binary (ever_married) and some with several factors (work_type, gender). Three interesting questions come to mind:
+
+A)  Is there any relationship between marriage status and stroke, and does this relationship differ by gender?
+
+B)  Same question as A but for type of employment
+
+C)  How well can we predict stroke?
+
+We will create contingency tables for A and B, and use logistic regression for C
+
+```{r}
+
+cleaned_stroke_data <- stroke_data %>% filter(gender != "Other") # Only one observation, meaningless to speak of
+
+contingency_table_gender <- table(data.frame(cleaned_stroke_data$gender, cleaned_stroke_data$stroke))
+
+
+married_stroke_data <- cleaned_stroke_data[cleaned_stroke_data$ever_married == "Yes",]
+contingency_table_marriage <- table(data.frame(married_stroke_data$gender, married_stroke_data$stroke))
+contingency_table_gender
+contingency_table_marriage
+
+```
+
+From this we can conclude that having ever been married seems to predict lower stroke risk for women.
+
+We now continue to employment
+
+```{r}
+
+model <- glm(stroke ~ gender*as.factor(work_type), data = cleaned_stroke_data, family = "binomial")
+summary(model)
+
+```
+
+Who would have thought that Self-employed men suffer dramatically increased stroke risk? Well, anyone who has ever observed one in the wild.
+
+Now lets throw in all of our variables and see how good our predictive validity can get given our dataset
+
+```{r}
+set.seed(050903)
+library(pROC)
+
+stroke_data_cleaned <- stroke_data_cleaned %>% mutate(bmi = as.numeric(bmi), avg_glucose_level = as.numeric(avg_glucose_level), age = as.numeric(age), gender = as.factor(gender), ever_married = as.factor(ever_married), Residence_type = as.factor(Residence_type), smoking_status = as.factor(smoking_status)) 
+final_cleaned_data <- stroke_data_cleaned[complete.cases(stroke_data_cleaned),]
+
+training_indicies <- runif(nrow(final_cleaned_data)) < 0.8
+testing_indicies <- !training_indicies
+
+training_data <- final_cleaned_data[training_indicies,]
+testing_data <- final_cleaned_data[testing_indicies,]
+
+
+
+giga_model <- glm(stroke ~ ., data = training_data, family = "binomial")
+
+
+summary(giga_model)
+
+predictions <- predict(giga_model, testing_data, type = "response")
+
+ggroc(roc(testing_data$stroke, predictions))
+
+```
+
+Our ROC curve looks good but not great. Also, since we have major class imbalance (minority class being strokes) we probably have an even worse precision-recall metric :/
+
+# Cleaning data
+
+AGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+A lot of countries have NA between 1965 and 1970 as well as between 1970 and 1975, where they have zero cell phones. It seems quite reasonable that if the amount of cell phones was 0 in 1970 and 0 in 1975 it was probably 0 in the years in between. So this is the first thing we handle
+
+```{r}
+
+cell_phone_data <- read.csv("cell_phones_total.csv")
+
+na_to_zero_pre_1975 <- function(row) {
+  fixed_row = row
+  for(i in 2:13) {
+    if(is.na(row[i])) {
+      fixed_row[i] = 0
+    }
+  }
+  
+ return(fixed_row) 
+}
+
+pre_1975_na_fixed <- cell_phone_data
+
+for(i in 1:nrow(cell_phone_data)) {
+  pre_1975_na_fixed[i,] <- na_to_zero_pre_1975(pre_1975_na_fixed[i,])
+}
+
+```
+
+Now we need to fix the "k, M, B" problem 
+
+```{r}
+
+fix_kmb_problem <- function(row) {
+  fixed_row = row
+  for(i in 2:length(row)) {
+    if(grepl("k",row[i])) {
+      fixed_row[i] <- as.numeric(gsub("k","",row[i]))*1000
+    }
+    else if(grepl("M",row[i])) {
+      fixed_row[i] <- as.numeric(gsub("M","",row[i]))*1000*1000
+    }
+    else if(grepl("B",row[i])) {
+      fixed_row[i] <- as.numeric(gsub("B","",row[i]))*1000*1000*1000
+    }
+    if(!is.na(row[i]) && row[i] == "") {
+      fixed_row[i] = NA
+    }
+  }
+  return(fixed_row)
+}
+
+kmb_fixed <- pre_1975_na_fixed
+
+for(i in 1:nrow(cell_phone_data)) {
+  kmb_fixed[i,] <- fix_kmb_problem(pre_1975_na_fixed[i,])
+}
+head(kmb_fixed)
+```
+
+Now we have cleaned the data
