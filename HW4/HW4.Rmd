@@ -1,0 +1,117 @@
+# Homework 4
+
+## Joining data
+
+we begin by loading necessary libraries and data
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+population_data <- read.csv("pop_data.csv") %>% select(!X)
+phone_data <- read.csv("cell_phone_data_cleaned.csv") %>% select(!X)
+```
+
+We now pivot the data frames and rename their fields so that we can merge them
+
+```{r}
+pivoted_population_data <- population_data %>% pivot_longer(!iso.3) %>% mutate(population = value) %>% select(!value)
+pivoted_phone_data <- phone_data %>% pivot_longer(!iso.3) %>% mutate(cell_phones = value) %>% select(!value)
+naming_data <- read.csv("country_data.csv") %>% select(name, alpha.3) %>% mutate(iso.3 = alpha.3) %>% select(!alpha.3)
+```
+
+We now merge the the population, name and cell-phone data, first by merging population and phone data and then by performing a lookup mapping iso3 code -\> name. Finally we re-name columns, select only the ones we are interested in, pivot wider and replace all NAs by -1. We treat all NAs the same since the data was cleaned in HW3 in such a way that it makes sense to treat all NAs the same. We replace with -1 since this obviously means missing data (it can't be a real datapoint since a per capita number is always non-negative) and since tidyverse will not allow us to fill a string in a numeric field
+
+```{r}
+merged_data <- merge(pivoted_population_data, pivoted_phone_data) %>% mutate(phones_per_capita = cell_phones / population)
+
+named_merged_data <- inner_join(naming_data, merged_data, by = "iso.3") %>% mutate(year = name.y, name = name.x, value = phones_per_capita) %>% select(name, year, phones_per_capita, value) %>% replace(is.na(.), -1) %>% mutate(year = as.numeric(gsub("[^0-9.-]","",year))) %>% select(name, year, value)
+
+pivoted_merged_data <- named_merged_data %>% pivot_wider(id_cols = year)
+
+```
+
+We now wish to visualise the growth rate of phones per capita in the different countries over the past ten years. Since we do not have data from after 2019 I interpret this assignment as asking us to visualise data in the range 2009 - 2019
+
+```{r}
+
+ten_year_data <- named_merged_data[named_merged_data$year >= 2009,]
+
+ten_year_data$growth <- rep(0, nrow(ten_year_data))
+
+for(i in 1:nrow(ten_year_data)) {
+  name <- ten_year_data[i,1]
+  starting_value <- ten_year_data[ten_year_data$name == name,3][1]
+  growth <- ten_year_data[i,3] / starting_value
+  ten_year_data$growth[i] <- growth
+  if(growth < 0) {
+    ten_year_data$growth[i] <- ten_year_data$growth[i-1]
+  }
+}
+
+
+
+ggplot(ten_year_data, aes(x = year, y = growth, color = name)) + geom_line(show.legend = FALSE) 
+```
+
+We can not plot the legend here, since it would be to cluttered. Instead, we plot a subset of countries that grew fast
+
+```{r}
+
+growth_2019 <- ten_year_data[ten_year_data$year == 2019,]
+
+fast_growers <- growth_2019[order(-growth_2019$growth)[1:10],]$name
+
+fast_grower_data <- ten_year_data[ten_year_data$name %in% fast_growers,]
+
+ggplot(fast_grower_data, aes(x = year, y = growth, color = name)) + geom_line() 
+
+```
+
+From this plot we can clearly see that Myanmar has had the fastest growth in cell phones per capita. 
+
+## SQL
+
+In this part of the assignment we will be working with an SQL database. We first find all users that signed up
+
+```{r}
+library("RSQLite")
+db <- dbConnect(drv=RSQLite::SQLite(), dbname="user_actions.db") 
+
+signed_up_users <- dbFetch(dbSendQuery(db, "SELECT DISTINCT username FROM user_actions WHERE action = 'signup'"))
+signed_up_users
+```
+Now we will compute the total number of log entries for each user
+
+```{r}
+actions_by_user_query <- dbSendQuery(db, "SELECT user_id, username, COUNT(*) as action_count FROM user_actions GROUP BY user_id")
+actions_by_user <- dbFetch(actions_by_user_query)
+actions_by_user
+```
+
+Finally we will find all users that signed up and logged in on the same day
+
+```{r}
+
+dbExecute(db, "DROP TABLE signup")
+dbExecute(db, "ALTER TABLE user_actions DROP COLUMN date")
+dbExecute(db, "ALTER TABLE user_actions ADD COLUMN date")
+dbExecute(db, "UPDATE user_actions set date = strftime('%Y-%m-%d', timestamp)")
+dbExecute(db, "CREATE TABLE signup AS SELECT username, date AS signup_date FROM user_actions WHERE action = 'signup'")
+
+
+same_day_query <- dbSendQuery(db, "SELECT DISTINCT username, user_id FROM (SELECT user_id, username FROM (SELECT * from signup s1, user_actions s2 WHERE s1.signup_date = s2.date) WHERE action = 'login')")
+same_day_results <- dbFetch(same_day_query)
+same_day_results
+```
+## Regex
+
+We will be extracting hashtags from a given comment and matching comments containing #python #programming or #programming #python
+
+```{r}
+hashtag_matcher <- "#(.*?)(?= )|#(.*?)(?=\")"
+python_programming_matcher <- "(#python #programming\"|#programming #python\")"
+str_extract_all("\"Today I am a programmer #programming #tips\"",hashtag_matcher)
+str_detect(python_programming_matcher, "\"Enjoyed the article. #coding #python\"")
+```
+
+Our regex works as expected
