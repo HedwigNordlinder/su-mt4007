@@ -6,6 +6,27 @@ We will investigate the relationship between sepal and petal dimensions using a 
 ``` r
 library(ggplot2)
 library(patchwork)
+library(cowplot)
+```
+
+```
+## 
+## Attaching package: 'cowplot'
+```
+
+```
+## The following object is masked from 'package:lubridate':
+## 
+##     stamp
+```
+
+```
+## The following object is masked from 'package:patchwork':
+## 
+##     align_plots
+```
+
+``` r
 iris_data <- read.csv("IRIS.csv")
 
 colour_values =  c("Iris-setosa" = "blue", "Iris-versicolor" = "green", "Iris-virginica" = "red")
@@ -16,7 +37,7 @@ width_plot <- ggplot(data = iris_data, aes(x = sepal_width, y = petal_width, col
 length_plot + width_plot
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
 
 By visual inspection of the figure it looks like there is a linear relationship between sepal length and petal length for Iris-virginica and Iris-versicolor, and no relationship for Iris-setosa. The same holds for sepal width and petal width, except the relationship looks weaker.
 
@@ -31,7 +52,7 @@ petal_length_histogram <- ggplot(data = iris_data, aes(x = species, y = petal_le
 (sepal_width_histogram + sepal_length_histogram) / (petal_width_histogram + petal_length_histogram)
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
 
 From this figure we conclude that iris-setosa has lower variance in petal width and petal length
 
@@ -60,30 +81,11 @@ for(i in 1:4) {
   local_plot <- plot_grid(local_plots[[1]], local_plots[[2]], local_plots[[3]], local_plots[[4]], ncol = 4)
   plots[[i]] <- local_plot
 }
-```
-
-```
-## Error in plot_grid(local_plots[[1]], local_plots[[2]], local_plots[[3]], : could not find function "plot_grid"
-```
-
-``` r
 plot <- plot_grid(plots[[1]], plots[[2]], plots[[3]], plots[[4]], nrow = 4)
-```
-
-```
-## Error in plot_grid(plots[[1]], plots[[2]], plots[[3]], plots[[4]], nrow = 4): could not find function "plot_grid"
-```
-
-``` r
 plot
 ```
 
-```
-## function (x, y, ...) 
-## UseMethod("plot")
-## <bytecode: 0x55578886c9f0>
-## <environment: namespace:base>
-```
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
 
 From this plot we can draw the conclusion that sepal length and width has a positive linear relationship for all species, petal length and petal width has a general linear trend that looks similar across all species and that the variance of petal length and width is low for Iris Setosa
 
@@ -94,21 +96,6 @@ We will begin by loading data from Artportalen
 
 ``` r
 library(tidyverse)
-```
-
-```
-## ── Attaching core tidyverse packages ─────────────────────────────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.5
-## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-## ✔ lubridate 1.9.3     ✔ tibble    3.2.1
-## ✔ purrr     1.0.2     ✔ tidyr     1.3.1
-## ── Conflicts ───────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-```
-
-``` r
 artportalen <- read.csv("artportalen.csv")
 
 artportalen <- artportalen %>% mutate(Antal = ifelse(is.na(as.numeric(Antal)),1, as.numeric(Antal)))
@@ -188,9 +175,7 @@ talgoxe_plot <- ggplot(talgoxe_distr, aes(x = month, y = count)) + geom_bar(stat
 plot_grid(blames_plot, koltrast_plot, talgoxe_plot, ncol = 3)
 ```
 
-```
-## Error in plot_grid(blames_plot, koltrast_plot, talgoxe_plot, ncol = 3): could not find function "plot_grid"
-```
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
 
 Grönsiska, Sothöna and Gräsand are the three most common species. The rarest species are seen in the table rarest_species.
 
@@ -207,7 +192,7 @@ pdf = dpois(k,mean(sothona))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 ``` r
 hist(gronsiska, prob = TRUE)
@@ -216,7 +201,7 @@ pdf = dpois(k,mean(gronsiska))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-2.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-2.png)
 
 ``` r
 hist(grasand, prob = TRUE)
@@ -225,7 +210,7 @@ pdf = dpois(k,mean(grasand))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-3.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-3.png)
 
 A Poission distribution is a poor fit for Sothöna, Grönsiska, Gräsand, probably since there is a large concentration at n = 1 for observations and a large tail. We will also investigate which species are the most overrepresented in Stockholm
 
@@ -293,7 +278,7 @@ sorted_species_counts$first_digit <- floor(sorted_species_counts$count / 10^(flo
 hist(sorted_species_counts$first_digit)
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 
 We do not obtain a Benford distribution, despite the values having a range spanning several orders of magnitude. Perhaps people hap-hazardly just put in "1000" for "A huge flock"
 
@@ -429,24 +414,7 @@ Now lets throw in all of our variables and see how good our predictive validity 
 ``` r
 set.seed(050903)
 library(pROC)
-```
 
-```
-## Type 'citation("pROC")' for a citation.
-```
-
-```
-## 
-## Attaching package: 'pROC'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     cov, smooth, var
-```
-
-``` r
 stroke_data_cleaned <- stroke_data_cleaned %>% mutate(bmi = as.numeric(bmi), avg_glucose_level = as.numeric(avg_glucose_level), age = as.numeric(age), gender = as.factor(gender), ever_married = as.factor(ever_married), Residence_type = as.factor(Residence_type), smoking_status = as.factor(smoking_status)) 
 ```
 

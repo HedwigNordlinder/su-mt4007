@@ -5,6 +5,7 @@ We will investigate the relationship between sepal and petal dimensions using a 
 ```{r}
 library(ggplot2)
 library(patchwork)
+library(cowplot)
 iris_data <- read.csv("IRIS.csv")
 
 colour_values =  c("Iris-setosa" = "blue", "Iris-versicolor" = "green", "Iris-virginica" = "red")
