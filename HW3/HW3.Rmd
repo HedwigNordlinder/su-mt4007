@@ -248,7 +248,7 @@ for(i in 1:nrow(cell_phone_data)) {
 
 ```
 
-Now we need to fix the "k, M, B" problem 
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null)
 
 ```{r}
 
@@ -265,7 +265,7 @@ fix_kmb_problem <- function(row) {
       fixed_row[i] <- as.numeric(gsub("B","",row[i]))*1000*1000*1000
     }
     if(!is.na(row[i]) && row[i] == "") {
-      fixed_row[i] = NA
+      fixed_row[i] = "missing"
     }
   }
   return(fixed_row)
