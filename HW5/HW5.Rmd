@@ -1,0 +1,53 @@
+# HW5
+
+##Rest API
+
+We will be retrieving data from the Nobel Prize REST API. We start by loading some libraries
+
+```{r}
+library(jsonlite)
+library(tm)
+library(wordcloud)
+# library(snowballC)
+laurates <- fromJSON("http://api.nobelprize.org/2.1/nobelPrizes?limit=100000&nobelPrizeYear=1901&yearTo=2024")$nobelPrizes$laureates
+```
+Now we make a word cloud of the 100 most common words used in the English language motivations. We extract the individual English language motivations, put them in a vector, create a corpus, remove "common"/stop words from said corpus and then create a wordcloud.
+```{r}
+motivations <- c()
+
+for(i in 1:length(laurates)) {
+ motivations <- append(motivations, laurates[[i]]$motivation$en)
+}
+corpus <- Corpus(VectorSource(motivations))
+clean_corpus <- tm_map(corpus, removeWords, c("the","and","for","their","his","her","which","with","has","who","they","that","into","are"))
+wordcloud(clean_corpus, max.words = 100)
+```
+
+## Web Scraping
+In this sub-assigmnet we will be web scraping. We use the rvest library to parse patterns in the HTML to get media database ID (upc?), title, price and rating. To get the three first pages we rbind three calls to our read_url function.
+```{r}
+library(rvest)
+library(stringr)
+read_url <- function(url) {
+  
+  products <- read_html(url) %>% html_elements(".product_pod")
+
+ratings <- products %>% html_elements(".star-rating") %>% html_attr("class")
+titles <- products %>% html_elements("h3") %>% html_elements("a") %>% html_attr("title")
+prices <- products %>% html_elements("div.product_price") %>% html_elements("p.price_color") %>% html_text()
+
+upcs <- products %>% html_elements("div.image_container") %>% html_elements("a") %>% html_elements("img") %>% html_attr("src")
+
+for(i in 1:length(upcs)) {
+  upcs[i] <- str_split_1(str_split_1(upcs[i],"/")[5],pattern = fixed("."))[1]
+  ratings[i] <- str_split_1(ratings[i],fixed(" "))[2]
+}
+
+
+
+return(data.frame(upc = upcs, rating = ratings, title = titles, price = prices))
+}
+
+books <- rbind(rbind(read_url("https://books.toscrape.com/"),read_url("https://books.toscrape.com/catalogue/page-2.html")),read_url("https://books.toscrape.com/catalogue/page-3.html"))
+books
+```
