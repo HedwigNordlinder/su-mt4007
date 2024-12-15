@@ -22,12 +22,19 @@ naming_data <- read.csv("country_data.csv") %>% select(name, alpha.3) %>% mutate
 We now merge the the population, name and cell-phone data, first by merging population and phone data and then by performing a lookup mapping iso3 code -\> name. Finally we re-name columns, select only the ones we are interested in, pivot wider and replace all NAs by -1. We treat all NAs the same since the data was cleaned in HW3 in such a way that it makes sense to treat all NAs the same. We replace with -1 since this obviously means missing data (it can't be a real datapoint since a per capita number is always non-negative) and since tidyverse will not allow us to fill a string in a numeric field
 
 ```{r}
-merged_data <- merge(pivoted_population_data, pivoted_phone_data) %>% mutate(phones_per_capita = cell_phones / population)
 
+to_present <- merge(pivoted_population_data, pivoted_phone_data)
+
+merged_data <- to_present %>% mutate(phones_per_capita = cell_phones / population)
+names(to_present) <- c("iso.3","year","population","n_cellphones")
+to_present$year <- substr(to_present$year, 2, 5)
 named_merged_data <- inner_join(naming_data, merged_data, by = "iso.3") %>% mutate(year = name.y, name = name.x, value = phones_per_capita) %>% select(name, year, phones_per_capita, value) %>% replace(is.na(.), -1) %>% mutate(year = as.numeric(gsub("[^0-9.-]","",year))) %>% select(name, year, value)
 
-pivoted_merged_data <- named_merged_data %>% pivot_wider(id_cols = year)
+countries_to_present <- named_merged_data %>% filter(year == 2019) %>% arrange(-value) %>% top_n(10) %>% select(name)
 
+pivoted_merged_data <- named_merged_data %>% filter(name %in% countries_to_present$name) %>% pivot_wider(id_cols = year) %>% arrange(-year)
+pivoted_merged_data
+to_present
 ```
 
 We now wish to visualise the growth rate of phones per capita in the different countries over the past ten years. Since we do not have data from after 2019 I interpret this assignment as asking us to visualise data in the range 2009 - 2019
@@ -91,17 +98,9 @@ actions_by_user
 Finally we will find all users that signed up and logged in on the same day
 
 ```{r}
-
-dbExecute(db, "DROP TABLE signup")
-dbExecute(db, "ALTER TABLE user_actions DROP COLUMN date")
-dbExecute(db, "ALTER TABLE user_actions ADD COLUMN date")
-dbExecute(db, "UPDATE user_actions set date = strftime('%Y-%m-%d', timestamp)")
-dbExecute(db, "CREATE TABLE signup AS SELECT username, date AS signup_date FROM user_actions WHERE action = 'signup'")
+dbFetch(dbSendQuery(db, "SELECT user_id, username FROM (SELECT username,user_id, action, count(CASE WHEN action='login' THEN 1 END) AS login_count, date FROM user_actions GROUP BY user_id, date) WHERE login_count>0 AND action='signup'"))
 
 
-same_day_query <- dbSendQuery(db, "SELECT DISTINCT username, user_id FROM (SELECT user_id, username FROM (SELECT * from signup s1, user_actions s2 WHERE s1.signup_date = s2.date) WHERE action = 'login')")
-same_day_results <- dbFetch(same_day_query)
-same_day_results
 ```
 ## Regex
 
