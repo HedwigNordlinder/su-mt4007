@@ -39,7 +39,7 @@ prices <- products %>% html_elements("div.product_price") %>% html_elements("p.p
 upcs <- products %>% html_elements("div.image_container") %>% html_elements("a") %>% html_elements("img") %>% html_attr("src")
 
 for(i in 1:length(upcs)) {
-  upcs[i] <- str_split_1(str_split_1(upcs[i],"/")[5],pattern = fixed("."))[1]
+  upcs[i] <- str_split_1(str_split_1(upcs[i],"/")[length(str_split_1(upcs[i],"/"))],pattern = fixed("."))[1]
   ratings[i] <- str_split_1(ratings[i],fixed(" "))[2]
 }
 
