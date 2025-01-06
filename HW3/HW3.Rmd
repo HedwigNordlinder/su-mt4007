@@ -35,29 +35,8 @@ From this figure we conclude that iris-setosa has lower variance in petal width 
 We will now generate a pairs plot for all variables
 
 ```{r}
-plots <- c()
-for(i in 1:4) {
-  local_plot <- ggplot()
-  local_plots <- c()
-  for(j in 1:4) {
-    
-    x_name = names(iris_data)[i]
-    y_name = names(iris_data)[j]
-    base_plot <- ggplot()
-    if(i == j) {
-        base_plot <- ggplot(data = iris_data, aes(y = .data[[y_name]], col = species)) +  
-          geom_density(alpha = 0.7, show.legend = FALSE) + coord_flip()
-    }
-    else {
-          base_plot <- ggplot(data = iris_data, aes(x = .data[[x_name]], y = .data[[y_name]], col =             species)) + geom_point(show.legend = FALSE)
-    }
-    local_plots[[j]] <- base_plot
-  }
-  local_plot <- plot_grid(local_plots[[1]], local_plots[[2]], local_plots[[3]], local_plots[[4]], ncol = 4)
-  plots[[i]] <- local_plot
-}
-plot <- plot_grid(plots[[1]], plots[[2]], plots[[3]], plots[[4]], nrow = 4)
-plot
+library(GGally)
+ggpairs(iris_data, aes(color=species, alpha = 0.5),columns=1:4, upper = list(continuous = "points"), legend = 1, switch = "both") + guides(alpha = "none")
 ```
 
 From this plot we can draw the conclusion that sepal length and width has a positive linear relationship for all species, petal length and petal width has a general linear trend that looks similar across all species and that the variance of petal length and width is low for Iris Setosa
@@ -79,7 +58,7 @@ rarest_species <- sorted_species_counts[sorted_species_counts$count == 1,]
 most_common_species
 rarest_species
 
-monthly_distribution <- artportalen %>% filter(Artnamn %in% most_common_species$Artnamn) %>% mutate(month = format(as.Date(Startdatum), "%m")) %>% group_by(Artnamn, month) %>% summarise(count = n())
+monthly_distribution <- artportalen %>% filter(Artnamn %in% most_common_species$Artnamn) %>% mutate(month = format(as.Date(Startdatum), "%m")) %>% group_by(Artnamn, month) %>% summarise(count = sum(Antal))
 
 blames_distr <- monthly_distribution %>% filter(Artnamn == "Grönsiska")
 koltrast_distr <- monthly_distribution %>% filter(Artnamn == "Sothöna")
@@ -123,7 +102,7 @@ merged_frame <- merge(species_counts, stockholm_species_counts)
 merged_frame$stockholm_share <- merged_frame$stockholm_count / merged_frame$count
 merged_frame <- merged_frame %>% filter(count != 1)
 sort_stockholm_share <- merged_frame[order(-merged_frame$stockholm_share),]
-sort_stockholm_share[1:40,]
+knitr::kable(sort_stockholm_share[1:40,])
 ```
 
 There are a lot of species that have only been observed in Stockholm.
@@ -145,7 +124,7 @@ We begin by loading stroke data
 
 ```{r}
 stroke_data <- read.csv("stroke-data.csv")
-head(stroke_data)
+knitr::kable(head(stroke_data))
 ```
 
 ```{r}
@@ -196,7 +175,7 @@ Now lets throw in all of our variables and see how good our predictive validity 
 set.seed(050903)
 library(pROC)
 
-stroke_data_cleaned <- stroke_data_cleaned %>% mutate(bmi = as.numeric(bmi), avg_glucose_level = as.numeric(avg_glucose_level), age = as.numeric(age), gender = as.factor(gender), ever_married = as.factor(ever_married), Residence_type = as.factor(Residence_type), smoking_status = as.factor(smoking_status)) 
+stroke_data_cleaned <- stroke_data %>% mutate(bmi = as.numeric(bmi), avg_glucose_level = as.numeric(avg_glucose_level), age = as.numeric(age), gender = as.factor(gender), ever_married = as.factor(ever_married), Residence_type = as.factor(Residence_type), smoking_status = as.factor(smoking_status)) 
 final_cleaned_data <- stroke_data_cleaned[complete.cases(stroke_data_cleaned),]
 
 training_indicies <- runif(nrow(final_cleaned_data)) < 0.8
@@ -221,8 +200,6 @@ ggroc(roc(testing_data$stroke, predictions))
 Our ROC curve looks good but not great. Also, since we have major class imbalance (minority class being strokes) we probably have an even worse precision-recall metric :/
 
 # Cleaning data
-
-AGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 
 A lot of countries have NA between 1965 and 1970 as well as between 1970 and 1975, where they have zero cell phones. It seems quite reasonable that if the amount of cell phones was 0 in 1970 and 0 in 1975 it was probably 0 in the years in between. So this is the first thing we handle
 
@@ -249,7 +226,7 @@ for(i in 1:nrow(cell_phone_data)) {
 
 ```
 
-Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null)
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have a NaN value we replace it with -1, to give a numerical identification to future users of the data that that cell was suspicious
 
 ```{r}
 
@@ -268,6 +245,9 @@ fix_kmb_problem <- function(row) {
     if(!is.na(row[i]) && row[i] == "") {
       fixed_row[i] = "missing"
     }
+    if(is.na(row[i])) {
+      fixed_row[i] = -1
+    }
   }
   return(fixed_row)
 }
@@ -277,7 +257,8 @@ kmb_fixed <- pre_1975_na_fixed
 for(i in 1:nrow(cell_phone_data)) {
   kmb_fixed[i,] <- fix_kmb_problem(pre_1975_na_fixed[i,])
 }
-head(kmb_fixed)
+table_to_present <- kmb_fixed %>% select(iso.3, X2015, X2016, X2017, X2018, X2019) %>% filter(iso.3 %in% c("CHN","IND","USA","IDN","BRA"))
+knitr::kable(table_to_present)
 ```
 
 Now we have cleaned the data

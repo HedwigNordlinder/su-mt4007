@@ -7,26 +7,6 @@ We will investigate the relationship between sepal and petal dimensions using a 
 library(ggplot2)
 library(patchwork)
 library(cowplot)
-```
-
-```
-## 
-## Attaching package: 'cowplot'
-```
-
-```
-## The following object is masked from 'package:lubridate':
-## 
-##     stamp
-```
-
-```
-## The following object is masked from 'package:patchwork':
-## 
-##     align_plots
-```
-
-``` r
 iris_data <- read.csv("IRIS.csv")
 
 colour_values =  c("Iris-setosa" = "blue", "Iris-versicolor" = "green", "Iris-virginica" = "red")
@@ -37,7 +17,7 @@ width_plot <- ggplot(data = iris_data, aes(x = sepal_width, y = petal_width, col
 length_plot + width_plot
 ```
 
-![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
+![plot of chunk unnamed-chunk-68](figure/unnamed-chunk-68-1.png)
 
 By visual inspection of the figure it looks like there is a linear relationship between sepal length and petal length for Iris-virginica and Iris-versicolor, and no relationship for Iris-setosa. The same holds for sepal width and petal width, except the relationship looks weaker.
 
@@ -52,7 +32,7 @@ petal_length_histogram <- ggplot(data = iris_data, aes(x = species, y = petal_le
 (sepal_width_histogram + sepal_length_histogram) / (petal_width_histogram + petal_length_histogram)
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
+![plot of chunk unnamed-chunk-69](figure/unnamed-chunk-69-1.png)
 
 From this figure we conclude that iris-setosa has lower variance in petal width and petal length
 
@@ -60,32 +40,30 @@ We will now generate a pairs plot for all variables
 
 
 ``` r
-plots <- c()
-for(i in 1:4) {
-  local_plot <- ggplot()
-  local_plots <- c()
-  for(j in 1:4) {
-    
-    x_name = names(iris_data)[i]
-    y_name = names(iris_data)[j]
-    base_plot <- ggplot()
-    if(i == j) {
-        base_plot <- ggplot(data = iris_data, aes(y = .data[[y_name]], col = species)) +  
-          geom_density(alpha = 0.7, show.legend = FALSE) + coord_flip()
-    }
-    else {
-          base_plot <- ggplot(data = iris_data, aes(x = .data[[x_name]], y = .data[[y_name]], col =             species)) + geom_point(show.legend = FALSE)
-    }
-    local_plots[[j]] <- base_plot
-  }
-  local_plot <- plot_grid(local_plots[[1]], local_plots[[2]], local_plots[[3]], local_plots[[4]], ncol = 4)
-  plots[[i]] <- local_plot
-}
-plot <- plot_grid(plots[[1]], plots[[2]], plots[[3]], plots[[4]], nrow = 4)
-plot
+library(GGally)
+ggpairs(iris_data, aes(color=species, alpha = 0.5),columns=1:4, upper = list(continuous = "points"), legend = 1, switch = "both") + guides(alpha = "none")
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+```
+## plot: [1, 1] [=======>--------------------------------------------------------------------------------------------------------------------] 6% est: 0s
+## plot: [1, 2] [===============>------------------------------------------------------------------------------------------------------------] 12% est: 0s
+## plot: [1, 3] [======================>-----------------------------------------------------------------------------------------------------] 19% est: 0s
+## plot: [1, 4] [==============================>---------------------------------------------------------------------------------------------] 25% est: 0s
+## plot: [2, 1] [======================================>-------------------------------------------------------------------------------------] 31% est: 0s
+## plot: [2, 2] [=============================================>------------------------------------------------------------------------------] 38% est: 0s
+## plot: [2, 3] [=====================================================>----------------------------------------------------------------------] 44% est: 0s
+## plot: [2, 4] [=============================================================>--------------------------------------------------------------] 50% est: 0s
+## plot: [3, 1] [=====================================================================>------------------------------------------------------] 56% est: 0s
+## plot: [3, 2] [=============================================================================>----------------------------------------------] 62% est: 0s
+## plot: [3, 3] [====================================================================================>---------------------------------------] 69% est: 0s
+## plot: [3, 4] [============================================================================================>-------------------------------] 75% est: 0s
+## plot: [4, 1] [====================================================================================================>-----------------------] 81% est: 0s
+## plot: [4, 2] [===========================================================================================================>----------------] 88% est: 0s
+## plot: [4, 3] [===================================================================================================================>--------] 94% est: 0s
+## plot: [4, 4] [============================================================================================================================]100% est: 0s
+```
+
+![plot of chunk unnamed-chunk-70](figure/unnamed-chunk-70-1.png)
 
 From this plot we can draw the conclusion that sepal length and width has a positive linear relationship for all species, petal length and petal width has a general linear trend that looks similar across all species and that the variance of petal length and width is low for Iris Setosa
 
@@ -158,7 +136,7 @@ rarest_species
 ```
 
 ``` r
-monthly_distribution <- artportalen %>% filter(Artnamn %in% most_common_species$Artnamn) %>% mutate(month = format(as.Date(Startdatum), "%m")) %>% group_by(Artnamn, month) %>% summarise(count = n())
+monthly_distribution <- artportalen %>% filter(Artnamn %in% most_common_species$Artnamn) %>% mutate(month = format(as.Date(Startdatum), "%m")) %>% group_by(Artnamn, month) %>% summarise(count = sum(Antal))
 ```
 
 ```
@@ -175,7 +153,7 @@ talgoxe_plot <- ggplot(talgoxe_distr, aes(x = month, y = count)) + geom_bar(stat
 plot_grid(blames_plot, koltrast_plot, talgoxe_plot, ncol = 3)
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
+![plot of chunk unnamed-chunk-71](figure/unnamed-chunk-71-1.png)
 
 Grönsiska, Sothöna and Gräsand are the three most common species. The rarest species are seen in the table rarest_species.
 
@@ -192,7 +170,7 @@ pdf = dpois(k,mean(sothona))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+![plot of chunk unnamed-chunk-72](figure/unnamed-chunk-72-1.png)
 
 ``` r
 hist(gronsiska, prob = TRUE)
@@ -201,7 +179,7 @@ pdf = dpois(k,mean(gronsiska))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-2.png)
+![plot of chunk unnamed-chunk-72](figure/unnamed-chunk-72-2.png)
 
 ``` r
 hist(grasand, prob = TRUE)
@@ -210,7 +188,7 @@ pdf = dpois(k,mean(grasand))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-3.png)
+![plot of chunk unnamed-chunk-72](figure/unnamed-chunk-72-3.png)
 
 A Poission distribution is a poor fit for Sothöna, Grönsiska, Gräsand, probably since there is a large concentration at n = 1 for observations and a large tail. We will also investigate which species are the most overrepresented in Stockholm
 
@@ -221,52 +199,53 @@ merged_frame <- merge(species_counts, stockholm_species_counts)
 merged_frame$stockholm_share <- merged_frame$stockholm_count / merged_frame$count
 merged_frame <- merged_frame %>% filter(count != 1)
 sort_stockholm_share <- merged_frame[order(-merged_frame$stockholm_share),]
-sort_stockholm_share[1:40,]
+knitr::kable(sort_stockholm_share[1:40,])
 ```
 
-```
-##                   Artnamn count stockholm_count stockholm_share
-## 6                 Bläsand   108             108       1.0000000
-## 7                 Bläsgås    40              40       1.0000000
-## 9            Brun kärrhök     3               3       1.0000000
-## 11            Buskskvätta     7               7       1.0000000
-## 16          Enkelbeckasin   169             169       1.0000000
-## 18        Europeisk skata     4               4       1.0000000
-## 20              Fiskgjuse     2               2       1.0000000
-## 24                    Gök     7               7       1.0000000
-## 27     Grågås x kanadagås     4               4       1.0000000
-## 35               Grönbena    36              36       1.0000000
-## 46               Hussvala     8               8       1.0000000
-## 50            Kärrsångare     6               6       1.0000000
-## 61               Lärkfalk     2               2       1.0000000
-## 62            Ljungpipare     2               2       1.0000000
-## 64              Måsfåglar   200             200       1.0000000
-## 65            Mellanskarv   200             200       1.0000000
-## 72        Nordlig gulärla     2               2       1.0000000
-## 73        Nordsjösilltrut     2               2       1.0000000
-## 76           Ob. ansergås    56              56       1.0000000
-## 77       Ob. bo-/bergfink    14              14       1.0000000
-## 78  Ob. fisk-/silvertärna    12              12       1.0000000
-## 79                Ob. gås     2               2       1.0000000
-## 84                Prutgås    40              40       1.0000000
-## 92                 Sädgås    30              30       1.0000000
-## 99            Silvertärna     3               3       1.0000000
-## 111              Snösparv    13              13       1.0000000
-## 114         Spetsbergsgås     2               2       1.0000000
-## 119           Stenskvätta    54              54       1.0000000
-## 127      Svarthakedopping   117             117       1.0000000
-## 144          Tundrasädgås     3               3       1.0000000
-## 145            Vattenrall    14              14       1.0000000
-## 103               Skedand   138             136       0.9855072
-## 3                Bergfink   489             481       0.9836401
-## 28               Gråhäger  2328            2261       0.9712199
-## 19                  Fasan    53              51       0.9622642
-## 26                 Grågås  1768            1701       0.9621041
-## 136              Tofsvipa   759             724       0.9538867
-## 33               Gråsparv  1545            1468       0.9501618
-## 69    Mindre strandpipare    17              16       0.9411765
-## 39              Grönsiska 20237           18801       0.9290409
-```
+
+
+|    |Artnamn               | count| stockholm_count| stockholm_share|
+|:---|:---------------------|-----:|---------------:|---------------:|
+|6   |Bläsand               |   108|             108|       1.0000000|
+|7   |Bläsgås               |    40|              40|       1.0000000|
+|9   |Brun kärrhök          |     3|               3|       1.0000000|
+|11  |Buskskvätta           |     7|               7|       1.0000000|
+|16  |Enkelbeckasin         |   169|             169|       1.0000000|
+|18  |Europeisk skata       |     4|               4|       1.0000000|
+|20  |Fiskgjuse             |     2|               2|       1.0000000|
+|24  |Gök                   |     7|               7|       1.0000000|
+|27  |Grågås x kanadagås    |     4|               4|       1.0000000|
+|35  |Grönbena              |    36|              36|       1.0000000|
+|46  |Hussvala              |     8|               8|       1.0000000|
+|50  |Kärrsångare           |     6|               6|       1.0000000|
+|61  |Lärkfalk              |     2|               2|       1.0000000|
+|62  |Ljungpipare           |     2|               2|       1.0000000|
+|64  |Måsfåglar             |   200|             200|       1.0000000|
+|65  |Mellanskarv           |   200|             200|       1.0000000|
+|72  |Nordlig gulärla       |     2|               2|       1.0000000|
+|73  |Nordsjösilltrut       |     2|               2|       1.0000000|
+|76  |Ob. ansergås          |    56|              56|       1.0000000|
+|77  |Ob. bo-/bergfink      |    14|              14|       1.0000000|
+|78  |Ob. fisk-/silvertärna |    12|              12|       1.0000000|
+|79  |Ob. gås               |     2|               2|       1.0000000|
+|84  |Prutgås               |    40|              40|       1.0000000|
+|92  |Sädgås                |    30|              30|       1.0000000|
+|99  |Silvertärna           |     3|               3|       1.0000000|
+|111 |Snösparv              |    13|              13|       1.0000000|
+|114 |Spetsbergsgås         |     2|               2|       1.0000000|
+|119 |Stenskvätta           |    54|              54|       1.0000000|
+|127 |Svarthakedopping      |   117|             117|       1.0000000|
+|144 |Tundrasädgås          |     3|               3|       1.0000000|
+|145 |Vattenrall            |    14|              14|       1.0000000|
+|103 |Skedand               |   138|             136|       0.9855072|
+|3   |Bergfink              |   489|             481|       0.9836401|
+|28  |Gråhäger              |  2328|            2261|       0.9712199|
+|19  |Fasan                 |    53|              51|       0.9622642|
+|26  |Grågås                |  1768|            1701|       0.9621041|
+|136 |Tofsvipa              |   759|             724|       0.9538867|
+|33  |Gråsparv              |  1545|            1468|       0.9501618|
+|69  |Mindre strandpipare   |    17|              16|       0.9411765|
+|39  |Grönsiska             | 20237|           18801|       0.9290409|
 
 There are a lot of species that have only been observed in Stockholm.
 
@@ -278,7 +257,7 @@ sorted_species_counts$first_digit <- floor(sorted_species_counts$count / 10^(flo
 hist(sorted_species_counts$first_digit)
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+![plot of chunk unnamed-chunk-74](figure/unnamed-chunk-74-1.png)
 
 We do not obtain a Benford distribution, despite the values having a range spanning several orders of magnitude. Perhaps people hap-hazardly just put in "1000" for "A huge flock"
 
@@ -289,25 +268,19 @@ We begin by loading stroke data
 
 ``` r
 stroke_data <- read.csv("stroke-data.csv")
-head(stroke_data)
+knitr::kable(head(stroke_data))
 ```
 
-```
-##      id gender age hypertension heart_disease ever_married     work_type Residence_type
-## 1  9046   Male  67            0             1          Yes       Private          Urban
-## 2 51676 Female  61            0             0          Yes Self-employed          Rural
-## 3 31112   Male  80            0             1          Yes       Private          Rural
-## 4 60182 Female  49            0             0          Yes       Private          Urban
-## 5  1665 Female  79            1             0          Yes Self-employed          Rural
-## 6 56669   Male  81            0             0          Yes       Private          Urban
-##   avg_glucose_level  bmi  smoking_status stroke
-## 1            228.69 36.6 formerly smoked      1
-## 2            202.21  N/A    never smoked      1
-## 3            105.92 32.5    never smoked      1
-## 4            171.23 34.4          smokes      1
-## 5            174.12   24    never smoked      1
-## 6            186.21   29 formerly smoked      1
-```
+
+
+|    id|gender | age| hypertension| heart_disease|ever_married |work_type     |Residence_type | avg_glucose_level|bmi  |smoking_status  | stroke|
+|-----:|:------|---:|------------:|-------------:|:------------|:-------------|:--------------|-----------------:|:----|:---------------|------:|
+|  9046|Male   |  67|            0|             1|Yes          |Private       |Urban          |            228.69|36.6 |formerly smoked |      1|
+| 51676|Female |  61|            0|             0|Yes          |Self-employed |Rural          |            202.21|N/A  |never smoked    |      1|
+| 31112|Male   |  80|            0|             1|Yes          |Private       |Rural          |            105.92|32.5 |never smoked    |      1|
+| 60182|Female |  49|            0|             0|Yes          |Private       |Urban          |            171.23|34.4 |smokes          |      1|
+|  1665|Female |  79|            1|             0|Yes          |Self-employed |Rural          |            174.12|24   |never smoked    |      1|
+| 56669|Male   |  81|            0|             0|Yes          |Private       |Urban          |            186.21|29   |formerly smoked |      1|
 
 
 ``` r
@@ -415,90 +388,89 @@ Now lets throw in all of our variables and see how good our predictive validity 
 set.seed(050903)
 library(pROC)
 
-stroke_data_cleaned <- stroke_data_cleaned %>% mutate(bmi = as.numeric(bmi), avg_glucose_level = as.numeric(avg_glucose_level), age = as.numeric(age), gender = as.factor(gender), ever_married = as.factor(ever_married), Residence_type = as.factor(Residence_type), smoking_status = as.factor(smoking_status)) 
+stroke_data_cleaned <- stroke_data %>% mutate(bmi = as.numeric(bmi), avg_glucose_level = as.numeric(avg_glucose_level), age = as.numeric(age), gender = as.factor(gender), ever_married = as.factor(ever_married), Residence_type = as.factor(Residence_type), smoking_status = as.factor(smoking_status)) 
 ```
 
 ```
-## Error: object 'stroke_data_cleaned' not found
+## Warning: There was 1 warning in `mutate()`.
+## ℹ In argument: `bmi = as.numeric(bmi)`.
+## Caused by warning:
+## ! NAs introduced by coercion
 ```
 
 ``` r
 final_cleaned_data <- stroke_data_cleaned[complete.cases(stroke_data_cleaned),]
-```
 
-```
-## Error: object 'stroke_data_cleaned' not found
-```
-
-``` r
 training_indicies <- runif(nrow(final_cleaned_data)) < 0.8
-```
-
-```
-## Error: object 'final_cleaned_data' not found
-```
-
-``` r
 testing_indicies <- !training_indicies
-```
 
-```
-## Error: object 'training_indicies' not found
-```
-
-``` r
 training_data <- final_cleaned_data[training_indicies,]
-```
-
-```
-## Error: object 'final_cleaned_data' not found
-```
-
-``` r
 testing_data <- final_cleaned_data[testing_indicies,]
-```
 
-```
-## Error: object 'final_cleaned_data' not found
-```
 
-``` r
+
 giga_model <- glm(stroke ~ ., data = training_data, family = "binomial")
-```
 
-```
-## Error in eval(mf, parent.frame()): object 'training_data' not found
-```
 
-``` r
 summary(giga_model)
 ```
 
 ```
-## Error: object 'giga_model' not found
+## 
+## Call:
+## glm(formula = stroke ~ ., family = "binomial", data = training_data)
+## 
+## Coefficients:
+##                              Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)                -7.062e+00  1.096e+00  -6.446 1.15e-10 ***
+## id                          1.520e-06  3.908e-06   0.389  0.69732    
+## genderMale                  1.597e-01  1.721e-01   0.928  0.35347    
+## genderOther                -1.118e+01  2.400e+03  -0.005  0.99628    
+## age                         7.774e-02  7.290e-03  10.663  < 2e-16 ***
+## hypertension                5.656e-01  1.958e-01   2.888  0.00388 ** 
+## heart_disease               3.100e-01  2.338e-01   1.326  0.18474    
+## ever_marriedYes            -2.047e-01  2.699e-01  -0.758  0.44831    
+## work_typeGovt_job          -9.015e-01  1.144e+00  -0.788  0.43083    
+## work_typeNever_worked      -1.113e+01  5.773e+02  -0.019  0.98461    
+## work_typePrivate           -9.631e-01  1.133e+00  -0.850  0.39524    
+## work_typeSelf-employed     -1.404e+00  1.157e+00  -1.214  0.22489    
+## Residence_typeUrban         4.625e-02  1.683e-01   0.275  0.78341    
+## avg_glucose_level           3.666e-03  1.468e-03   2.497  0.01253 *  
+## bmi                         2.442e-04  1.374e-02   0.018  0.98582    
+## smoking_statusnever smoked -8.771e-02  2.086e-01  -0.420  0.67421    
+## smoking_statussmokes        2.587e-01  2.559e-01   1.011  0.31216    
+## smoking_statusUnknown      -4.159e-01  2.833e-01  -1.468  0.14217    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1384.2  on 3958  degrees of freedom
+## Residual deviance: 1082.2  on 3941  degrees of freedom
+## AIC: 1118.2
+## 
+## Number of Fisher Scoring iterations: 15
 ```
 
 ``` r
 predictions <- predict(giga_model, testing_data, type = "response")
-```
 
-```
-## Error: object 'giga_model' not found
-```
-
-``` r
 ggroc(roc(testing_data$stroke, predictions))
 ```
 
 ```
-## Error: object 'testing_data' not found
+## Setting levels: control = 0, case = 1
 ```
+
+```
+## Setting direction: controls < cases
+```
+
+![plot of chunk unnamed-chunk-79](figure/unnamed-chunk-79-1.png)
 
 Our ROC curve looks good but not great. Also, since we have major class imbalance (minority class being strokes) we probably have an even worse precision-recall metric :/
 
 # Cleaning data
-
-AGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 
 A lot of countries have NA between 1965 and 1970 as well as between 1970 and 1975, where they have zero cell phones. It seems quite reasonable that if the amount of cell phones was 0 in 1970 and 0 in 1975 it was probably 0 in the years in between. So this is the first thing we handle
 
@@ -524,7 +496,7 @@ for(i in 1:nrow(cell_phone_data)) {
 }
 ```
 
-Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null)
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have a NaN value we replace it with -1, to give a numerical identification to future users of the data that that cell was suspicious
 
 
 ``` r
@@ -543,6 +515,9 @@ fix_kmb_problem <- function(row) {
     if(!is.na(row[i]) && row[i] == "") {
       fixed_row[i] = "missing"
     }
+    if(is.na(row[i])) {
+      fixed_row[i] = -1
+    }
   }
   return(fixed_row)
 }
@@ -552,45 +527,18 @@ kmb_fixed <- pre_1975_na_fixed
 for(i in 1:nrow(cell_phone_data)) {
   kmb_fixed[i,] <- fix_kmb_problem(pre_1975_na_fixed[i,])
 }
-head(kmb_fixed)
+table_to_present <- kmb_fixed %>% select(iso.3, X2015, X2016, X2017, X2018, X2019) %>% filter(iso.3 %in% c("CHN","IND","USA","IDN","BRA"))
+knitr::kable(table_to_present)
 ```
 
-```
-##   iso.3 X1960 X1965 X1966 X1967 X1968 X1969 X1970 X1971 X1972 X1973 X1974 X1975 X1976 X1977 X1978
-## 1   ABW     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-## 2   AFG     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-## 3   AGO     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-## 4   ALB     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-## 5   AND     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-## 6   ARE     0     0     0     0     0     0     0     0     0     0     0     0    NA    NA    NA
-##   X1979   X1980   X1981 X1982 X1983 X1984 X1985 X1986 X1987 X1988 X1989 X1990 X1991 X1992   X1993
-## 1     0       0       0     0     0     0     0     0     0     0     0     0     0    20 missing
-## 2     0       0       0     0     0     0     0     0     0     0     0     0     0     0       0
-## 3     0       0       0     0     0     0     0     0     0     0     0     0     0     0    1100
-## 4     0       0       0     0     0     0     0     0     0     0     0     0     0     0       0
-## 5     0       0       0     0     0     0     0     0     0     0     0     0     0   770     780
-## 6    NA missing missing  2330  3560  4940  7920 11200 13700 13800 24900 33600 43000 48900   70600
-##     X1994  X1995  X1996  X1997  X1998  X1999   X2000   X2001   X2002   X2003   X2004   X2005   X2006
-## 1 missing   1720   3000   3400   5380  12000   15000   53000   61800   70000   98400  103000  109000
-## 2       0      0      0      0      0      0       0       0   25000   2e+05   6e+05 1200000 2520000
-## 3    1820   1990   3300   7050   9820  24000   25800   75000  140000  350000  740000 1610000 3050000
-## 4       0      0   2300   3300   5600  11000   29800  393000  851000 1100000 1260000 1530000 1910000
-## 5     784   2830   5490   8620  14100  20600   23500   29400   32800   51900   58400   64600   69000
-## 6   91500 129000 194000 309000 493000 832000 1430000 1910000 2430000 2970000 3680000 4530000 5520000
-##     X2007   X2008    X2009    X2010    X2011    X2012    X2013    X2014    X2015    X2016    X2017
-## 1  114000  121000   128000   132000  missing   135000   139000   140000   141000  missing  missing
-## 2 4670000 7900000 10500000 10200000 13800000 15300000 16800000 18400000 19700000 21600000 23900000
-## 3 4960000 6770000  8110000  9400000 12100000 12800000 13300000 14100000 13900000  1.3e+07 13300000
-## 4 2320000 1860000  2460000  2690000  3100000  3500000  3690000  3360000  3400000  3370000  3630000
-## 5   63500   64200    64500    65500    65000    63900    63900    66200    71300    76100    80300
-## 6 7730000 9360000 10700000 10900000 11700000 13800000 16100000 16800000 17900000 19900000 19800000
-##      X2018    X2019
-## 1  missing  missing
-## 2  2.2e+07 22600000
-## 3 13300000 14800000
-## 4  2710000  2630000
-## 5    82600    87900
-## 6 20100000 19600000
-```
+
+
+|iso.3 |X2015    |X2016    |X2017    |X2018    |X2019    |
+|:-----|:--------|:--------|:--------|:--------|:--------|
+|BRA   |2.58e+08 |2.44e+08 |2.18e+08 |2.07e+08 |missing  |
+|CHN   |1.29e+09 |1.36e+09 |1.47e+09 |1.65e+09 |1.73e+09 |
+|IDN   |3.39e+08 |3.86e+08 |4.35e+08 |3.19e+08 |3.45e+08 |
+|IND   |1e+09    |1.13e+09 |1.17e+09 |1.18e+09 |1.15e+09 |
+|USA   |3.82e+08 |3.96e+08 |4e+08    |4.22e+08 |missing  |
 
 Now we have cleaned the data
