@@ -35,7 +35,7 @@ wordcloud(clean_corpus, max.words = 100)
 ![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
 
 ## Web Scraping
-In this sub-assigmnet we will be web scraping. We use the rvest library to parse patterns in the HTML to get media database ID (upc?), title, price and rating. To get the three first pages we rbind three calls to our read_url function.
+In this sub-assigmnet we will be web scraping. We use the rvest library to parse patterns in the HTML to get the UPC, title, price and rating. To get the three first pages we rbind three calls to our read_url function.
 
 ``` r
 library(rvest)
