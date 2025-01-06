@@ -226,7 +226,7 @@ for(i in 1:nrow(cell_phone_data)) {
 
 ```
 
-Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have an NA value we replace it with -1, to give a numerical identification to future users of the data that that cell was suspicious
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have an NA value in a row post 1975 we replace it with -1, to give a numerical identification to future users of the data that that cell had missing data. 
 
 ```{r}
 

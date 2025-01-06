@@ -17,7 +17,7 @@ width_plot <- ggplot(data = iris_data, aes(x = sepal_width, y = petal_width, col
 length_plot + width_plot
 ```
 
-![plot of chunk unnamed-chunk-68](figure/unnamed-chunk-68-1.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 By visual inspection of the figure it looks like there is a linear relationship between sepal length and petal length for Iris-virginica and Iris-versicolor, and no relationship for Iris-setosa. The same holds for sepal width and petal width, except the relationship looks weaker.
 
@@ -32,7 +32,7 @@ petal_length_histogram <- ggplot(data = iris_data, aes(x = species, y = petal_le
 (sepal_width_histogram + sepal_length_histogram) / (petal_width_histogram + petal_length_histogram)
 ```
 
-![plot of chunk unnamed-chunk-69](figure/unnamed-chunk-69-1.png)
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
 
 From this figure we conclude that iris-setosa has lower variance in petal width and petal length
 
@@ -63,7 +63,7 @@ ggpairs(iris_data, aes(color=species, alpha = 0.5),columns=1:4, upper = list(con
 ## plot: [4, 4] [============================================================================================================================]100% est: 0s
 ```
 
-![plot of chunk unnamed-chunk-70](figure/unnamed-chunk-70-1.png)
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 
 From this plot we can draw the conclusion that sepal length and width has a positive linear relationship for all species, petal length and petal width has a general linear trend that looks similar across all species and that the variance of petal length and width is low for Iris Setosa
 
@@ -153,7 +153,7 @@ talgoxe_plot <- ggplot(talgoxe_distr, aes(x = month, y = count)) + geom_bar(stat
 plot_grid(blames_plot, koltrast_plot, talgoxe_plot, ncol = 3)
 ```
 
-![plot of chunk unnamed-chunk-71](figure/unnamed-chunk-71-1.png)
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 
 Grönsiska, Sothöna and Gräsand are the three most common species. The rarest species are seen in the table rarest_species.
 
@@ -170,7 +170,7 @@ pdf = dpois(k,mean(sothona))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-72](figure/unnamed-chunk-72-1.png)
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
 
 ``` r
 hist(gronsiska, prob = TRUE)
@@ -179,7 +179,7 @@ pdf = dpois(k,mean(gronsiska))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-72](figure/unnamed-chunk-72-2.png)
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-2.png)
 
 ``` r
 hist(grasand, prob = TRUE)
@@ -188,7 +188,7 @@ pdf = dpois(k,mean(grasand))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-72](figure/unnamed-chunk-72-3.png)
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-3.png)
 
 A Poission distribution is a poor fit for Sothöna, Grönsiska, Gräsand, probably since there is a large concentration at n = 1 for observations and a large tail. We will also investigate which species are the most overrepresented in Stockholm
 
@@ -257,7 +257,7 @@ sorted_species_counts$first_digit <- floor(sorted_species_counts$count / 10^(flo
 hist(sorted_species_counts$first_digit)
 ```
 
-![plot of chunk unnamed-chunk-74](figure/unnamed-chunk-74-1.png)
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
 
 We do not obtain a Benford distribution, despite the values having a range spanning several orders of magnitude. Perhaps people hap-hazardly just put in "1000" for "A huge flock"
 
@@ -466,7 +466,7 @@ ggroc(roc(testing_data$stroke, predictions))
 ## Setting direction: controls < cases
 ```
 
-![plot of chunk unnamed-chunk-79](figure/unnamed-chunk-79-1.png)
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 
 Our ROC curve looks good but not great. Also, since we have major class imbalance (minority class being strokes) we probably have an even worse precision-recall metric :/
 
@@ -496,7 +496,7 @@ for(i in 1:nrow(cell_phone_data)) {
 }
 ```
 
-Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have a NaN value we replace it with -1, to give a numerical identification to future users of the data that that cell was suspicious
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have an NA value in a row post 1975 we replace it with -1, to give a numerical identification to future users of the data that that cell had missing data. 
 
 
 ``` r
@@ -520,6 +520,7 @@ fix_kmb_problem <- function(row) {
     }
   }
   return(fixed_row)
+  
 }
 
 kmb_fixed <- pre_1975_na_fixed
