@@ -14,13 +14,13 @@ The local labour markets are created by first determining which municipalities c
 
 After the local centers are created all remaining municipalities are assigned to the labour market created by the local center that most of its commuting residents commute to. (Construction and use of labour market areas in Sweden, Statistics Sweden 2010).
 
-Quoting directly from the aforementioned SCB report: "The purpose of local labour markets is to describe the functioning of the labour market for geographical areas that are relatively independent of the outside world with respect to supply and demand of labour" (translation my own, original [source](https://share.scb.se/ov9993/data/publikationer/statistik/_publikationer/am0207_2009a01_br_am95br1001.pdf) in Swedish).
+Quoting directly from the aforementioned SCB report: "The purpose of local labour markets is to describe the functioning of the labour market for geographical areas that are relatively independent of the outside world with respect to supply and demand of labour" (translation my own, original [source](https://share.scb.se/ov9993/data/publikationer/statistik/_publikationer/am0207_2009a01_br_am95br1001.pdf) in Swedish). The definition of local labour market used in this post can be found [here](https://www.scb.se/hitta-statistik/statistik-efter-amne/arbetsmarknad/sysselsattning-forvarvsarbete-och-arbetstider/befolkningens-arbetsmarknadsstatus/produktrelaterat/fordjupad-information/lokala-arbetsmarknader-la/)
 
 This post will ask and answer the question: Does this method of subdivision work by testing whether or not the local labour markets are mostly independent of the outside world. To perform this test this I will analyse how this subdivision type interacted with the COVID-19 pandemic.
 
 ## The COVID-19 pandemic - A novel stress test
 
-In 2020 the COVID pandemic swept over the world, with Sweden being no exception. It is perhaps the best monitored and documented pandemic in the history of the world. In particular, the granular data collected by the Swedish Public Health Agency (Folkhälsomyndigheten) provides an excellent opportunity to test if the labour market regions live up to their purpose of being "relatively independent of the outside world"
+In 2020 the COVID pandemic swept over the world, with Sweden being no exception. It is perhaps the best monitored and documented pandemic in the history of the world. In particular, the granular data collected by the Swedish Public Health Agency (Folkhälsomyndigheten) provides an excellent opportunity to test if the labour market regions live up to their purpose of being "relatively independent of the outside world". ([This](https://fohm-app.folkhalsomyndigheten.se/Folkhalsodata/pxweb/sv/A_Folkhalsodata/A_Folkhalsodata__H_Sminet__covid19__falldata/bcov19Kom.px/) source was used to download COVID-19 case data. To replicate, download the result of [this query](https://fohm-app.folkhalsomyndigheten.se/Folkhalsodata/sq/02907364-efc9-4436-ab67-3c66c8c0e0b1))
 
 If labour market regions are truly independent economic units we would expected COVID-19 spread patterns between adjacent labour markets to be less correlated than say, between counties (whose borders are not drawn with the explicit purpouse of defining self contained economic zones)
 
@@ -129,24 +129,21 @@ Again while the map form of visualisation certainly is pleasing to the eye a his
 
 ## Conclusions
 
-The rank correlations for the county based model show a fatter right tail and mean shifted to the right of the labour market model, consistent with that labour markets should be mostly independent entities. Directionally, the relationship is consistent with SCBs goals, and a paired T-test of the rank correlations gives us a p value in the $10^{-12} - 10^{-11}$ range indicating it is unlikely due to randomness.
+Inspecting the histogram we see that the rank correlations for the county based model show a fatter right tail and mean shifted to the right of the labour market model, consistent with labour markets being more independent entities than counties. That is, at least directionally, the relationship is consistent with Statistics Swedens goals and provides some evidence that they function as intended.
 
-``` r
-t.test(la_municipal_correlations$srho, county_municipal_correlations$srho, paired = TRUE)
-```
+This finding should of course be interpreted with several important caveats, some of the following are listed:
 
-```         
-## 
-##  Paired t-test
-## 
-## data:  la_municipal_correlations$srho and county_municipal_correlations$srho
-## t = -7.1834, df = 288, p-value = 5.833e-12
-## alternative hypothesis: true mean difference is not equal to 0
-## 95 percent confidence interval:
-##  -0.02842593 -0.01619887
-## sample estimates:
-## mean difference 
-##      -0.0223124
-```
+-   COVID-19 spread should provide a very good proxy to how human movement patterns look on small timescales. However, an economic shock like the COVID-19 pandemic is not representative for how the labour market normally functions. Work from home increased and commuting patterns probably radically changed as a consequence of the pandemic, with a potential impact on the conclusions drawn
 
-It is however hard to interpret if the effect size is any meaningful. Initially I tried adding the adjacent cases as a parameter to our linear model, but getting the dataset to adhere in any way to the necessary modelling assumptions was almost impossible. Given more time I would have created the a Zero Inflated Negative Binomial model.
+-   It is hard to interpret if the effect size is any meaningful, since it is measured on the *ranks* of the data, causing us to loose information about the magnitude of deviations.
+
+Initially I tried adding the adjacent cases as a parameter to our linear model, but getting the dataset to adhere in any way to the necessary modelling assumptions was almost impossible. Given more time I would have created a zero inflated negative binomial model.
+
+Despite these limitations it is highly encouraging that the quantitative evidence from the COVID-19 pandemic seems to vindicate the methodology of Statistics Sweden, especially since many other countries have adopted this methodology (such as Finland). In any case it would be highly worrying if adjacent labour markets showed higher interdependence than adjacent counties, which would seriously call into question the effectiveness of the method of creating supposedly self-contained labour markets.
+
+My findings show that despite the crudeness of the approach of Statistics Sweden they seem to be able to capture true economic patterns in the Swedish labour market, as evidenced by the consistently lower rank correlation of adjacent labour markets compared to adjacent counties. I also believe that this novel way of evaluating the validity of regional sub-divisions with pandemics could be extended to both more advanced pandemic models and other countries where data is granular enough. I sincerely hope this method is employed in other situations with better modeling, and thank the reader for their attention.
+
+## How to replicate
+
+-   Clone this repository
+-   Run the main.Rmd file
