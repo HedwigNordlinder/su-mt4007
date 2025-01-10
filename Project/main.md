@@ -44,7 +44,9 @@ for geographical areas that are relatively independent of the outside
 world with respect to supply and demand of labour” (translation my own,
 original
 [source](https://share.scb.se/ov9993/data/publikationer/statistik/_publikationer/am0207_2009a01_br_am95br1001.pdf)
-in Swedish).
+in Swedish). The definition of local labour market used in this post can
+be found
+[here](https://www.scb.se/hitta-statistik/statistik-efter-amne/arbetsmarknad/sysselsattning-forvarvsarbete-och-arbetstider/befolkningens-arbetsmarknadsstatus/produktrelaterat/fordjupad-information/lokala-arbetsmarknader-la/)
 
 This post will ask and answer the question: Does this method of
 subdivision work by testing whether or not the local labour markets are
@@ -59,7 +61,11 @@ exception. It is perhaps the best monitored and documented pandemic in
 the history of the world. In particular, the granular data collected by
 the Swedish Public Health Agency (Folkhälsomyndigheten) provides an
 excellent opportunity to test if the labour market regions live up to
-their purpose of being “relatively independent of the outside world”
+their purpose of being “relatively independent of the outside world”.
+([This](https://fohm-app.folkhalsomyndigheten.se/Folkhalsodata/pxweb/sv/A_Folkhalsodata/A_Folkhalsodata__H_Sminet__covid19__falldata/bcov19Kom.px/)
+source was used to download COVID-19 case data. To replicate, download
+the result of [this
+query](https://fohm-app.folkhalsomyndigheten.se/Folkhalsodata/sq/02907364-efc9-4436-ab67-3c66c8c0e0b1))
 
 If labour market regions are truly independent economic units we would
 expected COVID-19 spread patterns between adjacent labour markets to be
@@ -83,66 +89,11 @@ Now that we have installed swemaps2 we can make a map of Swedens labour
 market regions. They changed ever so slightly during the pandemic, so we
 will have to account for that in our modeling.
 
-``` r
-source("geometry_functions.R")
-library(openxlsx)
-library(patchwork)
-library(grid)
-library(gridExtra)
-labour_market_plots <- list()
-for(i in 1:4) {
-  labour_market_regions <- read.xlsx("la.xlsx", sheet = i)
-  
-  labour_market_geometry <- generate_labour_market_geometry(labour_market_regions)
-  current_plot <- ggplot(labour_market_geometry, aes(fill=name)) +
-    geom_sf() +
-    scale_fill_viridis_d() +
-    theme_swemap2() +
-    theme(
-      legend.position = "none",
-      plot.subtitle = element_text(size = 8, hjust = 0.5)
-    ) +
-    labs(subtitle = paste("Year", 2019+i))
-    
-  labour_market_plots <- append(labour_market_plots, list(current_plot))
-}
-
-ggsave("la_markets.png",
-       wrap_plots(labour_market_plots, ncol = 2, spacing = 0) +
-         plot_annotation(
-           title = "Swedish Labour Markets",
-           theme = theme(
-             plot.title = element_text(size = 14, hjust = 0),
-             plot.margin = unit(c(0, 0, 0, 0), "cm")
-           )
-         ) & 
-         theme(
-           plot.margin = unit(c(0, 0, 0, 0), "cm")
-         ),
-       height = 12,
-       width = 8,
-       dpi = 300,bg = "white")
-```
-
 <figure>
 <img src="la_markets.png" alt="Swedish labour markets, 2020 - 2023" />
 <figcaption aria-hidden="true">Swedish labour markets, 2020 -
 2023</figcaption>
 </figure>
-
-``` r
-municipality_populations <- population_px_data_frame %>% filter(age == "tot") %>% mutate(year_index = as.numeric(year) - 2019) %>% select(-year) %>% group_by(year_index,region) %>% rename(population = Number ) %>% summarise(population = sum(population))
-```
-
-``` r
-source("parsing_functions.R")
-cases_frame <- read.csv("cases.csv", sep = ";")
-cases_frame <- cases_frame %>% mutate(municipal_code = parse_municipality_name(Kommun))
-cases_frame <- cases_frame %>% pivot_longer(cols = -c(Kommun, municipal_code))
-cases_frame <- cases_frame %>% mutate(time = parse_timestamps(name))
-cases_frame <- cases_frame %>% mutate(year_index = times_to_years(time))
-cases_frame <- merge(cases_frame, municipality_populations, by.x = c("municipal_code", "year_index"), by.y = c("region", "year_index"))
-```
 
 <figure>
 <img src="municipal_spread.gif"
@@ -219,93 +170,6 @@ at the time of writing. Finally, we will also have to remove Gotland
 since it both as a labour market and as a county lacks adjacent labour
 markets / counties, making models including it un-identifiable.
 
-``` r
-la_tagged_cases_frame <- tag_municipalities_years("la.xlsx",cases_frame,time_to_year)
-tagged_cases_frame <- tag_county(la_tagged_cases_frame)
-tagged_cases_frame <- tagged_cases_frame %>% select(municipal_code, value, time, Kod, county,year_index, population) %>% rename(cases = value, la_region = Kod)
-```
-
-``` r
-tagged_cases_frame <- tagged_cases_frame %>% filter(municipal_code != "0980")
-```
-
-``` r
-source("geometry_functions.R")
-la_adjacency_frame <- data.frame()
-
-
-
-for(j in 1:4) {
-
-  labour_market <- read.xlsx("la.xlsx", sheet = j)
-  la_sf <- generate_labour_market_geometry(labour_market)
-  la_sf_adjacency <- generate_adjacency_dataframe(la_sf)
-  
-  current_tagged_cases_frame <- tagged_cases_frame %>% filter(year_index == j)
-  adjacent_cases <- rep(0,nrow(current_tagged_cases_frame))
-  
-  
-  for(i in 1:nrow(current_tagged_cases_frame)) {
-    
-    current_la_region <- current_tagged_cases_frame$la_region[i]
-    
-    
-    current_labour_market_adjacency <- la_sf_adjacency %>% 
-      filter(name == current_la_region) 
-
-    current_time <- current_tagged_cases_frame$time[i]
-    current_time_frame <- current_tagged_cases_frame %>% 
-      filter(time == current_time)
-  
-    adjacency_filter <- as.logical(current_labour_market_adjacency[1,1:(ncol(current_labour_market_adjacency)-1)])
-  
-    adjacent_cases[i] <- sum(current_time_frame[adjacency_filter,]$cases)
-    
-  
-  }
-  current_tagged_cases_frame$adjacent_cases <- adjacent_cases
-  la_adjacency_frame <- rbind(la_adjacency_frame, current_tagged_cases_frame)
-}
-```
-
-``` r
-county_adjacency_frame <- data.frame()
-county_sf_adjacency <- generate_adjacency_dataframe(county)
-county_sf_adjacency$ln_kod <- county$ln_kod
-for(j in 1:4) {
-  
-
-  current_tagged_cases_frame <- tagged_cases_frame %>% filter(year_index == j)
-  adjacent_cases <- rep(0,nrow(current_tagged_cases_frame))
-
-  
-  for(i in 1:nrow(current_tagged_cases_frame)) {
-    
-    current_county <- current_tagged_cases_frame$county[i]
-    current_county_adjacency <- county_sf_adjacency %>% 
-      filter(ln_kod == current_county) 
-    
-    current_time <- current_tagged_cases_frame$time[i]
-    current_time_frame <- current_tagged_cases_frame %>% 
-      filter(time == current_time)
-  
-    adjacency_filter <- as.logical(current_county_adjacency[1,1:(ncol(current_county_adjacency)-1)])
-  
-    adjacent_cases[i] <- sum(current_time_frame[adjacency_filter,]$cases)
-    
-  
-  }
-  current_tagged_cases_frame$adjacent_cases <- adjacent_cases
-  county_adjacency_frame <- rbind(county_adjacency_frame, current_tagged_cases_frame)
-}
-```
-
-``` r
-compound_la_adjacency_frame <- rbind(week_on_week_case_ratios(la_adjacency_frame %>% filter(year_index == 1)), week_on_week_case_ratios(la_adjacency_frame %>% filter(year_index == 2)), week_on_week_case_ratios(la_adjacency_frame %>% filter(year_index == 3)), week_on_week_case_ratios(la_adjacency_frame %>% filter(year_index == 4)))
-
-compound_county_adjacency_frame <- rbind(week_on_week_case_ratios(county_adjacency_frame %>% filter(year_index == 1)), week_on_week_case_ratios(county_adjacency_frame %>% filter(year_index == 2)), week_on_week_case_ratios(county_adjacency_frame %>% filter(year_index == 3)), week_on_week_case_ratios(county_adjacency_frame %>% filter(year_index == 4)))
-```
-
 Several hundred lines of cumbersome data wrangling later and we are
 finally ready to run our models, which are shown in the code below
 
@@ -322,121 +186,67 @@ compound_la_adjacency_frame$fe_residuals <- resid(la_anova_model)
 compound_county_adjacency_frame$fe_residuals <- resid(county_anova_model)
 
 
-la_municipal_correlations <- municipal_correlations(compound_la_adjacency_frame)
-county_municipal_correlations <- municipal_correlations(compound_county_adjacency_frame)
+la_municipal_correlations <- municipal_spearman_rho(compound_la_adjacency_frame)
+county_municipal_correlations <- municipal_spearman_rho(compound_county_adjacency_frame)
 
 la_municipal_correlations <- merge(la_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
 county_municipal_correlations <- merge(county_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
-
-la_correlation_plot <- ggplot(la_municipal_correlations, 
-    aes(geometry=geometry, fill=srho)) + 
-    geom_sf() + 
-    common_fill_scale +
-    theme_swemap2() + 
-    theme(
-        plot.title = element_text(size = 10, hjust = 0.5),
-        plot.margin = margin(5, 5, 5, 5),
-        aspect.ratio = 2  # For Sweden's proportions
-    ) +
-    labs(title = "LA model")
-
-county_correlation_plot <- ggplot(county_municipal_correlations, 
-    aes(geometry=geometry, fill=srho)) + 
-    geom_sf() + 
-    common_fill_scale +
-    theme_swemap2() + 
-    theme(
-        plot.title = element_text(size = 10, hjust = 0.5),
-        plot.margin = margin(5, 5, 5, 5),
-        aspect.ratio = 2
-    ) +
-    labs(title = "Oxenstierna/county model")
-
-combined_plot <- la_correlation_plot + county_correlation_plot + 
-    plot_layout(guides = "collect", widths = c(1, 1)) & 
-    theme(
-        plot.title = element_text(size = 12, hjust = 0.5),
-        legend.position = "right",  # Move legend to right
-        legend.justification = "left"  # Align legend with plots
-    )
-combined_plot <- combined_plot + 
-    plot_annotation(
-        title = "Spearman's correlation coefficients for municipalities",
-        theme = theme(
-            plot.title = element_text(size = 14, hjust = 0.5, margin = margin(b = 20))
-        )
-    )
-
-combined_plot
 ```
 
-<figure>
-<img src="main_files/figure-gfm/unnamed-chunk-12-1.png"
-alt="Spearman correlation of LA based model vs county based model" />
-<figcaption aria-hidden="true">Spearman correlation of LA based model vs
-county based model</figcaption>
-</figure>
+![](main_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
 Again while the map form of visualisation certainly is pleasing to the
 eye a histogram can’t hurt.
 
-``` r
-la_mean <- mean(la_municipal_correlations$srho)
-county_mean <- mean(county_municipal_correlations$srho)
-
-ggplot() + 
-  geom_histogram(data = la_municipal_correlations, 
-                 aes(x = srho, y = after_stat(count/sum(count)), fill = "LA Municipal"), 
-                 alpha = 0.5, 
-                 position = "identity") +
-  geom_histogram(data = county_municipal_correlations, 
-                 aes(x = srho, y = after_stat(count/sum(count)), fill = "County Municipal"), 
-                 alpha = 0.5, 
-                 position = "identity") +
-  geom_vline(aes(xintercept = la_mean),
-             color = "blue",
-             linetype = "dashed", 
-             size = 1) +
-  geom_vline(aes(xintercept = county_mean),
-             color = "red",
-             linetype = "dashed", 
-             size = 1) +
-  labs(title = "Distribution of Spatial Correlations",
-       x = "Spatial Correlation (ρ)",
-       y = "Frequency",
-       fill = "Dataset") +
-  theme_minimal()
-```
-
-![](main_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](main_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
 
 ## Conclusions
 
 The rank correlations for the county based model show a fatter right
 tail and mean shifted to the right of the labour market model,
-consistent with that labour markets should be mostly independent
-entities. Directionally, the relationship is consistent with SCBs goals,
-and a paired T-test of the rank correlations gives us a p value in the
-$10^{-12} - 10^{-11}$ range indicating it is unlikely due to randomness.
+consistent with labour markets being more independent entities than
+counties. That is, at least directionally, the relationship is
+consistent with Statistics Swedens goals and provides some evidence that
+they function as intended.
 
-``` r
-t.test(la_municipal_correlations$srho, county_municipal_correlations$srho, paired = TRUE)
-```
+This finding should of course be interpreted with several important
+caveats, some of the following are listed:
 
-    ## 
-    ##  Paired t-test
-    ## 
-    ## data:  la_municipal_correlations$srho and county_municipal_correlations$srho
-    ## t = -7.1834, df = 288, p-value = 5.833e-12
-    ## alternative hypothesis: true mean difference is not equal to 0
-    ## 95 percent confidence interval:
-    ##  -0.02842593 -0.01619887
-    ## sample estimates:
-    ## mean difference 
-    ##      -0.0223124
+- COVID-19 spread should provide a very good proxy to how human movement
+  patterns look on small timescales. However, an economic shock like the
+  COVID-19 pandemic is not representative for how the labour market
+  normally functions. Work from home increased and commuting patterns
+  probably radically changed as a consequence of the pandemic, with a
+  potential impact on the conclusions drawn
 
-It is however hard to interpret if the effect size is any meaningful.
+- It is hard to interpret if the effect size is any meaningful, since it
+  is measured on the *ranks* of the data, causing us to loose
+  information about the magnitude of deviations.
+
 Initially I tried adding the adjacent cases as a parameter to our linear
 model, but getting the dataset to adhere in any way to the necessary
 modelling assumptions was almost impossible. Given more time I would
-have created the a Zero Inflated Negative Binomial model.
+have created a zero inflated negative binomial model.
+
+Despite these limitations it is highly encouraging that the quantitative
+evidence from the COVID-19 pandemic seems to vindicate the methodology
+of Statistics Sweden, especially since many other countries have adopted
+this methodology (such as Finland). In any case it would be highly
+worrying if adjacent labour markets showed higher interdependence than
+adjacent counties, which would seriously call into question the
+effectiveness of the method of creating supposedly self-contained labour
+markets.
+
+My findings show that despite the crudeness of the approach of
+Statistics Sweden they seem to be able to capture true economic patterns
+in the Swedish labour market, as evidenced by the consistently lower
+rank correlation of adjacent labour markets compared to adjacent
+counties. I also believe that this novel way of evaluating the validity
+of regional sub-divisions with pandemics could be extended to both more
+advanced pandemic models and other countries where data is granular
+enough.
+
+## How to replicate
+
+- Clone this repository
+- Run the main.Rmd file

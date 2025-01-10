@@ -47,6 +47,7 @@ library(openxlsx)
 library(patchwork)
 library(grid)
 library(gridExtra)
+library(ggplot2)
 labour_market_plots <- list()
 for(i in 1:4) {
   labour_market_regions <- read.xlsx("la.xlsx", sheet = i)
@@ -124,8 +125,15 @@ library(swemaps2)
 library(ggplot2)
 library(ggthemes)
 library(gifski)
+time_points <- unique(cases_frame$time)
+sorted_times <- time_points[order(
+  as.numeric(sub("-.*", "", time_points)),  # year part
+  as.numeric(sub(".*-", "", time_points))   # week part
+)]
+
+
 municipal_plot_files <- c()
-for(i in unique(cases_frame$time)) {
+for(i in sorted_times) {
   current_week <- cases_frame %>% filter(time == i) %>% mutate(cases = value)
   filename <- paste0("img/municipal_week_",i,".png")
   merged_counties <- merge(municipality, current_week, by.x="kn_kod", by.y="municipal_code")
@@ -268,29 +276,34 @@ compound_la_adjacency_frame$fe_residuals <- resid(la_anova_model)
 compound_county_adjacency_frame$fe_residuals <- resid(county_anova_model)
 
 
-la_municipal_correlations <- municipal_correlations(compound_la_adjacency_frame)
-county_municipal_correlations <- municipal_correlations(compound_county_adjacency_frame)
+la_municipal_correlations <- municipal_spearman_rho(compound_la_adjacency_frame)
+county_municipal_correlations <- municipal_spearman_rho(compound_county_adjacency_frame)
 
 la_municipal_correlations <- merge(la_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
 county_municipal_correlations <- merge(county_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
+```
 
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 la_correlation_plot <- ggplot(la_municipal_correlations, 
     aes(geometry=geometry, fill=srho)) + 
     geom_sf() + 
-    common_fill_scale +
     theme_swemap2() + 
+    scale_fill_gradient2(name = "Correlation\ncoefficient", 
+                        limits = c(-0.4, 0.4)) +  # adjust limits as needed
     theme(
         plot.title = element_text(size = 10, hjust = 0.5),
         plot.margin = margin(5, 5, 5, 5),
-        aspect.ratio = 2  # For Sweden's proportions
+        aspect.ratio = 2,
+        legend.position = "none"  # Remove legend from first plot
     ) +
     labs(title = "LA model")
 
 county_correlation_plot <- ggplot(county_municipal_correlations, 
     aes(geometry=geometry, fill=srho)) + 
     geom_sf() + 
-    common_fill_scale +
     theme_swemap2() + 
+    scale_fill_gradient2(name = "Spearmans rho",
+                        limits = c(-0.4, 0.4)) +
     theme(
         plot.title = element_text(size = 10, hjust = 0.5),
         plot.margin = margin(5, 5, 5, 5),
@@ -302,9 +315,10 @@ combined_plot <- la_correlation_plot + county_correlation_plot +
     plot_layout(guides = "collect", widths = c(1, 1)) & 
     theme(
         plot.title = element_text(size = 12, hjust = 0.5),
-        legend.position = "right",  # Move legend to right
-        legend.justification = "left"  # Align legend with plots
+        legend.position = "right",
+        legend.justification = "left"
     )
+
 combined_plot <- combined_plot + 
     plot_annotation(
         title = "Spearman's correlation coefficients for municipalities",
@@ -312,7 +326,6 @@ combined_plot <- combined_plot +
             plot.title = element_text(size = 14, hjust = 0.5, margin = margin(b = 20))
         )
     )
-
 combined_plot
 ```
 
@@ -366,5 +379,4 @@ My findings show that despite the crudeness of the approach of Statistics Sweden
 ## How to replicate
 
 -   Clone this repository
--   Run the main.Rmd file 
-
+-   Run the main.Rmd file
