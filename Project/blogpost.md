@@ -194,12 +194,9 @@ eye a histogram can’t hurt.
 
 ## Conclusions
 
-The rank correlations for the county based model show a fatter right
-tail and mean shifted to the right of the labour market model,
-consistent with labour markets being more independent entities than
+The rank correlations for the county based model show an almost identical mean to the labour markets, casting doubt on them being more independent entities than
 counties. That is, at least directionally, the relationship is
-consistent with Statistics Swedens goals and provides some evidence that
-they function as intended.
+inconsistent with Statistics Swedens goals and provides some evidence that the might not be functioning as intended. 
 
 This finding should of course be interpreted with several important
 caveats, some of the following are listed:
@@ -220,21 +217,16 @@ model, but getting the dataset to adhere in any way to the necessary
 modelling assumptions was almost impossible. Given more time I would
 have created a zero inflated negative binomial model.
 
-Despite these limitations it is highly encouraging that the quantitative
-evidence from the COVID-19 pandemic seems to vindicate the methodology
+Despite these limitations it is concerning that the quantitative
+evidence from the COVID-19 pandemic seems to implicate the methodology
 of Statistics Sweden, especially since many other countries have adopted
-this methodology (such as Finland). In any case it would be highly
-worrying if adjacent labour markets showed higher interdependence than
-adjacent counties, which would seriously call into question the
+this methodology (such as Finland). At least they do not show a stronger relationship which would seriously call into question the
 effectiveness of the method of creating supposedly self-contained labour
 markets.
 
-My findings show that despite the crudeness of the approach of
-Statistics Sweden they seem to be able to capture true economic patterns
-in the Swedish labour market, as evidenced by the consistently lower
-rank correlation of adjacent labour markets compared to adjacent
-counties. I also believe that this novel way of evaluating the validity
-of regional sub-divisions with pandemics could be extended to both more
+My findings call into question approach of
+Statistics Sweden. At least concerning pandemic spread they do not seem to be able to capture true economic patterns
+in the Swedish labour market. I believe that this novel way of evaluating the validity of regional sub-divisions with pandemics could be extended to both more
 advanced pandemic models and other countries where data is granular
 enough.
 
