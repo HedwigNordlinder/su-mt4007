@@ -1,7 +1,7 @@
 library(swemaps2)
 library(sf)
 generate_labour_market_geometry <- function(labour_markets) {
-
+  # 3006 is the coordinate system for Sweden in CRS
   municipality <- st_transform(municipality, 3006)
   
   
@@ -13,14 +13,15 @@ generate_labour_market_geometry <- function(labour_markets) {
   
   for(i in 1:length(labour_market_codes)) {
     constituent_polygons <- merged_labour_markets$geometry[merged_labour_markets$Kod == labour_market_codes[i]]
-    labour_market_geometry <- st_union(constituent_polygons)
+    labour_market_geometry <- st_union(constituent_polygons) # Merge municipality polygons into larger LA market polygons
     labour_market_geometries <- c(labour_market_geometries, labour_market_geometry)
   }
   
   geometry <- st_sfc(labour_market_geometries, crs = 3006)
-  
   return(st_sf(data.frame(geometry=geometry, name=labour_market_codes)))
 }
+
+# Calculates which components in an sf_object are adjacent
 
 generate_adjacency_dataframe <- function(sf_object) {
   
@@ -33,13 +34,16 @@ generate_adjacency_dataframe <- function(sf_object) {
 
 
 
-# We tag municipalities by both their labour markets and their regions
+# First two numbers in a muni_code represent the county it belongs to
 
 tag_county <- function(time_series_frame) {
   
   tagged_time_series_frame <- time_series_frame %>% mutate(county = substr(municipal_code,1,2))
   return(tagged_time_series_frame)
 }
+
+# Tags municipalities by which labour market they belong to, based on a tagging sheet and a function
+# time_to_sheet_index that maps time -> sheet index
 
 tag_municipalities_years <- function(tagging_sheet_path, time_series_frame, time_to_sheet_index) {
   tagged_time_series_frame <- data.frame(matrix(ncol=ncol(time_series_frame) + 1))
@@ -65,17 +69,7 @@ municipality_to_la <- function(labour_markets, single_week_observation) {
   return(converted_frame)
 }
 
-get_cases_adjacent <- function(single_week_observation, sf_object) {
-  
-  adjacency_frame <- generate_adjacency_dataframe(sf_object)
-  
-  
-  adjacent_cases <- rep(0,nrow(single_week_observation))
-  
-  
-  
-  
-}
+# Finds the case count in adjacent regions
 
 adjacent_cases_all_weeks <- function(cases_frame, labour_market_file, time_to_labour_market_function) {
   
@@ -99,7 +93,7 @@ adjacent_cases_all_weeks <- function(cases_frame, labour_market_file, time_to_la
   return(compound_frame)
 }
 
-# Problem: We lost two labour market regions
+# Computes case_ratio and adjacent_case_ratio
 week_on_week_case_ratios <- function(time_series_frame) {
   times <- unique(time_series_frame$time)
   
@@ -122,4 +116,3 @@ week_on_week_case_ratios <- function(time_series_frame) {
   return(time_series_frame_with_changes)
 }
 
-# Näst på dagordningen: Arbetsmarknadsregionerna / regionerna är dina fixed effects, därefter jämför du prediktionsförmågan mellan dem på Bayesianskt vis
