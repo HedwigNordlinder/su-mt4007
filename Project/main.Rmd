@@ -38,7 +38,7 @@ remotes::install_github("filipwastberg/swemaps2")
 Now that we have installed swemaps2 we can make a map of Swedens labour market regions. They changed ever so slightly during the pandemic, so we will have to account for that in our modeling.
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
-install.packages(c("openxlsx","patchwork","grid","gridExtra","pxweb","tidyverse","ggplot2","ggthemes","gifski"))
+# install.packages(c("openxlsx","patchwork","grid","gridExtra","pxweb","tidyverse","ggplot2","ggthemes","gifski"))
 ```
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}

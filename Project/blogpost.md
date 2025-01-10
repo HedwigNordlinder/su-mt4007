@@ -1,6 +1,7 @@
 # Does the Labour Market Subdivision Work?
 
-By Hedwig Nora Nordlinder
+Hedwig Nora Nordlinder
+
 ## Introduction
 
 The standard administrative subdivision of Sweden is Country -\> County
@@ -113,14 +114,14 @@ such a model I have instead resorted to the following:
 We first define our modeling target, which will be the log geometric
 change in cases in a municipality between time (measured in weeks) $t$
 and $t-1$. We call this
-$[\text{log case ratio}]_{i,t} = \log\frac{\text{cases in municipality i at time t}}{\text{cases in municipality i at time t-1}}$.
+`[log case ratio]_{i,t} = α + β*1_{time = t} + γ*1_{county of municipality i} + ε_{i,t}`.
 The reason we set our modeling target to the log geometric change in
 cases is partially to avoid having to model count data and partially to
 avoid (or at least reduce) the autocorrelation of case counts over time.
 With our modeling target defined we can now define our model, which will
 be
 
-`[log case ratio]_{i,t} = α + β*1_{time = t} + γ*1_{labour market of municipality i} + ε_{i,t}`.
+`[log case ratio]_{i,t} = α + β*1_{time = t} + γ*1_{county of municipality i} + ε_{i,t}`.
 
 This represents a fixed effects model with a time effect and a labour
 market effect.
@@ -137,7 +138,7 @@ predict the structure of the Swedish labour market in the 21st century,
 so his borders should serve as a good benchmark. This gives us the
 “Oxenstierna” or county model
 
-`[log case ratio]_{i,t} = α + β*1_{time = t} + γ*1_{county of municipality i} + ε_{i,t}`.
+$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\mathbf{1}_{\text{county of municipality i}} + \epsilon_{i,t}$.
 
 We will not pay too much attention to the standard modelling assumptions
 of linear regression (conditionally independent response variable, iid
@@ -185,12 +186,12 @@ la_municipal_correlations <- merge(la_municipal_correlations, municipality, by.x
 county_municipal_correlations <- merge(county_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
 ```
 
-![](main_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](main_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 Again while the map form of visualisation certainly is pleasing to the
 eye a histogram can’t hurt.
 
-![](main_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](main_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 ## Conclusions
 
