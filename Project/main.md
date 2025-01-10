@@ -1,14 +1,6 @@
----
-title: "Does the Labour Market Subdivision Work?"
-output: 
-  github_document:
-    preserve_yaml: true
-    html_preview: false
----
+# Does the Labour Market Subdivision Work?
 
-Does the Labour Market Subdivision Work?
-================
-
+By Hedwig Nora Nordlinder
 ## Introduction
 
 The standard administrative subdivision of Sweden is Country -\> County
