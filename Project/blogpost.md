@@ -208,8 +208,8 @@ caveats, some of the following are listed:
   probably radically changed as a consequence of the pandemic, with a
   potential impact on the conclusions drawn
 
-- It is hard to interpret if the effect size is any meaningful, since it
-  is measured on the *ranks* of the data, causing us to loose
+- It is hard to interpret the result, since it
+   is measured on the *ranks* of the data, causing us to loose
   information about the magnitude of deviations.
 
 Initially I tried adding the adjacent cases as a parameter to our linear
