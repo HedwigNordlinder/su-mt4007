@@ -130,6 +130,7 @@ for(i in unique(cases_frame$time)) {
   ggsave(filename, current_plot)
   municipal_plot_files <- c(municipal_plot_files, filename)
 }
+gifski(municipal_plot_files, "municipal_spread.gif", delay = 0.2)
 ```
 
 ![Geographic evolution of the COVID-19 pandemic](municipal_spread.gif)

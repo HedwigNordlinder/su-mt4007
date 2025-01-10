@@ -1,8 +1,6 @@
----
-title: "Does the Labour Market Subdivision Work?"
-author: "Hedwig Nora Nordlinder"
-output: github_document
----
+# Does the Labour Market Subdivision Work?
+
+By Hedwig Nora Nordlinder
 
 ## Introduction
 
@@ -18,7 +16,7 @@ After the local centers are created all remaining municipalities are assigned to
 
 Quoting directly from the aforementioned SCB report: "The purpose of local labour markets is to describe the functioning of the labour market for geographical areas that are relatively independent of the outside world with respect to supply and demand of labour" (translation my own, original [source](https://share.scb.se/ov9993/data/publikationer/statistik/_publikationer/am0207_2009a01_br_am95br1001.pdf) in Swedish).
 
-This post will ask and answer the question: Does this method of subdivision work by testing whether or not the local labour markets are mostly independent of the outside world. To perform this test this I will analyse how this subdivision type interacted with the COVID-19 pandemic. 
+This post will ask and answer the question: Does this method of subdivision work by testing whether or not the local labour markets are mostly independent of the outside world. To perform this test this I will analyse how this subdivision type interacted with the COVID-19 pandemic.
 
 ## The COVID-19 pandemic - A novel stress test
 
@@ -28,25 +26,14 @@ If labour market regions are truly independent economic units we would expected 
 
 This formulation will lead the layman to ask questions such as "What counts as 'less correlated'" and the expert asking questions such as "How do we define 'correlation'". I will make explicit my modeling assumptions later in the post, but first, let us visualise the spread of COVID through Swedish municipalities. While I wish to keep the amount of code displayed to a minimum, credit is due to Filip Wästberg for the creation of the R package "swemaps2", which I make heavy use of.
 
-
-``` r
+```{r}
 library(remotes)
 remotes::install_github("filipwastberg/swemaps2")
 ```
 
 Now that we have installed swemaps2 we can make a map of Swedens labour market regions. They changed ever so slightly during the pandemic, so we will have to account for that in our modeling.
 
-
-
 ![Swedish labour markets, 2020 - 2023](la_markets.png)
-
-
-
-
-
-
-
-
 
 ![Geographic evolution of the COVID-19 pandemic](municipal_spread.gif)
 
@@ -58,7 +45,7 @@ The most appropriate model from my limited experience and understanding would pr
 
 We first define our modeling target, which will be the log geometric change in cases in a municipality between time (measured in weeks) $t$ and $t-1$. We call this $[\text{log case ratio}]_{i,t} = \log\frac{\text{cases in municipality i at time t}}{\text{cases in municipality i at time t-1}}$. The reason we set our modeling target to the log geometric change in cases is partially to avoid having to model count data and partially to avoid (or at least reduce) the autocorrelation of case counts over time. With our modeling target defined we can now define our model, which will be
 
-$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\mathbf{1}_{\text{labour market of municipality i}} + \epsilon_{i,t}$.
+$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{\{time = t\}} + \gamma\mathbf{1}_{\{\text{labour market of municipality }i\}} + \epsilon_{i,t}$
 
 This represents a fixed effects model with a time effect and a labour market effect.
 
@@ -68,24 +55,13 @@ $[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\ma
 
 We will not pay too much attention to the standard modelling assumptions of linear regression (conditionally independent response variable, iid normal errors with constant variance) since we will not be performing frequentist tests or relying on the likelihood. Instead, we will measure the correlation of the models residuals to the log case count in adjacent labour markets/counties.
 
-It may seem counterintuitive, but if labor market regions are truly functioning as independent units, we would expect adjacent regions to have less predictive power for COVID-19 spread compared to the predictive power of a county based model. 
+It may seem counterintuitive, but if labor market regions are truly functioning as independent units, we would expect adjacent regions to have less predictive power for COVID-19 spread compared to the predictive power of a county based model.
 
 To make this comparison we will need to handle both the fact that the amount of labour market regions changed and that the constituent municipalities changed during the pandemic. There were 69 labour market regions in 2020, which shrunk to 67 for 2021 - 2023 (perhaps due to decreased travel caused by the pandemic). We also have to handle that 2020 was a leap year with 53 weeks. I have also decided to use the 2023 labour market regions for 2024 since the updated ones were not available at the time of writing. Finally, we will also have to remove Gotland since it both as a labour market and as a county lacks adjacent labour markets / counties, making models including it un-identifiable.
-
-
-
-
-
-
-
-
-
-
 
 Several hundred lines of cumbersome data wrangling later and we are finally ready to run our models, which are shown in the code below
 
 We will start by computing Spearmans $\rho$ for each municipality and plotting it
-
 
 ``` r
 source("correlation_functions.R")
@@ -153,15 +129,15 @@ Again while the map form of visualisation certainly is pleasing to the eye a his
 
 ## Conclusions
 
-The rank correlations for the county based model show a fatter right tail and mean shifted to the right of the labour market model, consistent with that labour markets should be mostly independent entities. Directionally, the relationship is consistent with SCBs goals, and a paired T-test of the rank correlations gives us a p value in the $10^{-12} - 10^{-11}$ range indicating it is unlikely due to randomness. 
+The rank correlations for the county based model show a fatter right tail and mean shifted to the right of the labour market model, consistent with that labour markets should be mostly independent entities. Directionally, the relationship is consistent with SCBs goals, and a paired T-test of the rank correlations gives us a p value in the $10^{-12} - 10^{-11}$ range indicating it is unlikely due to randomness.
 
 ``` r
 t.test(la_municipal_correlations$srho, county_municipal_correlations$srho, paired = TRUE)
 ```
 
-```
+```         
 ## 
-## 	Paired t-test
+##  Paired t-test
 ## 
 ## data:  la_municipal_correlations$srho and county_municipal_correlations$srho
 ## t = -7.1834, df = 288, p-value = 5.833e-12
@@ -173,4 +149,4 @@ t.test(la_municipal_correlations$srho, county_municipal_correlations$srho, paire
 ##      -0.0223124
 ```
 
-It is however hard to interpret if the effect size is any meaningful. Initially I tried adding the adjacent cases as a parameter to our linear model, but getting the dataset to adhere in any way to the necessary modelling assumptions was almost impossible. Given more time I would have created the a Zero Inflated Negative Binomial model. 
+It is however hard to interpret if the effect size is any meaningful. Initially I tried adding the adjacent cases as a parameter to our linear model, but getting the dataset to adhere in any way to the necessary modelling assumptions was almost impossible. Given more time I would have created the a Zero Inflated Negative Binomial model.
