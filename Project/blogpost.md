@@ -120,7 +120,7 @@ avoid (or at least reduce) the autocorrelation of case counts over time.
 With our modeling target defined we can now define our model, which will
 be
 
-$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\mathbf{1}_{\text{labour market of municipality i}} + \epsilon_{i,t}$.
+`[log case ratio]_{i,t} = α + β*1_{time = t} + γ*1_{labour market of municipality i} + ε_{i,t}`.
 
 This represents a fixed effects model with a time effect and a labour
 market effect.
@@ -137,7 +137,7 @@ predict the structure of the Swedish labour market in the 21st century,
 so his borders should serve as a good benchmark. This gives us the
 “Oxenstierna” or county model
 
-$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\mathbf{1}_{\text{county of municipality i}} + \epsilon_{i,t}$.
+`[log case ratio]_{i,t} = α + β*1_{time = t} + γ*1_{county of municipality i} + ε_{i,t}`.
 
 We will not pay too much attention to the standard modelling assumptions
 of linear regression (conditionally independent response variable, iid
