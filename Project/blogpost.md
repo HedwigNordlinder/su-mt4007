@@ -45,13 +45,13 @@ The most appropriate model from my limited experience and understanding would pr
 
 We first define our modeling target, which will be the log geometric change in cases in a municipality between time (measured in weeks) $t$ and $t-1$. We call this $[\text{log case ratio}]_{i,t} = \log\frac{\text{cases in municipality i at time t}}{\text{cases in municipality i at time t-1}}$. The reason we set our modeling target to the log geometric change in cases is partially to avoid having to model count data and partially to avoid (or at least reduce) the autocorrelation of case counts over time. With our modeling target defined we can now define our model, which will be
 
-$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{\{time = t\}} + \gamma\mathbf{1}_{\{\text{labour market of municipality }i\}} + \epsilon_{i,t}$
+$$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{\{time = t\}} + \gamma\mathbf{1}_{\{\text{labour market of municipality }i\}} + \epsilon_{i,t}$$
 
 This represents a fixed effects model with a time effect and a labour market effect.
 
 We have defined our modeling target, great. But now to the question of what counts as a "weak relationship" between adjacent labour markets. A priori we have very limited information about how such a relationship would look, so to gain information we will run the same model but using adjacent counties instead. In theory county borders should be largely unrelated (or at least less related) to labour market, since most county borders stem from the Axel Oxenstierna county reform of 1614. While Oxenstierna undeniably was a great statesman I doubt that he managed to predict the structure of the Swedish labour market in the 21st century, so his borders should serve as a good benchmark. This gives us the "Oxenstierna" or county model
 
-$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\mathbf{1}_{\text{county of municipality i}} + \epsilon_{i,t}$.
+$$[\text{log case ratio}]_{i,t} = \alpha + \beta\mathbf{1}_{time = t} + \gamma\mathbf{1}_{\text{county of municipality i}} + \epsilon_{i,t}$$.
 
 We will not pay too much attention to the standard modelling assumptions of linear regression (conditionally independent response variable, iid normal errors with constant variance) since we will not be performing frequentist tests or relying on the likelihood. Instead, we will measure the correlation of the models residuals to the log case count in adjacent labour markets/counties.
 
