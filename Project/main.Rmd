@@ -268,57 +268,41 @@ We will start by computing Spearmans $\rho$ for each municipality and plotting i
 
 ```{r warning = FALSE, fig.cap = "Spearman correlation of LA based model vs county based model"}
 source("correlation_functions.R")
-
 la_anova_model <- lm(log(case_ratios) ~ as.factor(time) + as.factor(la_region), data = compound_la_adjacency_frame)
 county_anova_model <- lm(log(case_ratios) ~ as.factor(time) + as.factor(county), data = compound_county_adjacency_frame)
-
 compound_la_adjacency_frame$fe_residuals <- resid(la_anova_model)
 compound_county_adjacency_frame$fe_residuals <- resid(county_anova_model)
-
-
 la_municipal_correlations <- municipal_spearman_rho(compound_la_adjacency_frame)
 county_municipal_correlations <- municipal_spearman_rho(compound_county_adjacency_frame)
-
 la_municipal_correlations <- merge(la_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
 county_municipal_correlations <- merge(county_municipal_correlations, municipality, by.x = "municipal_code", by.y = "kn_kod")
-```
-
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
 la_correlation_plot <- ggplot(la_municipal_correlations, 
     aes(geometry=geometry, fill=srho)) + 
     geom_sf() + 
     theme_swemap2() + 
-    scale_fill_gradient2(name = "Correlation\ncoefficient", 
-                        limits = c(-0.4, 0.4)) +  # adjust limits as needed
     theme(
         plot.title = element_text(size = 10, hjust = 0.5),
         plot.margin = margin(5, 5, 5, 5),
-        aspect.ratio = 2,
-        legend.position = "none"  # Remove legend from first plot
+        aspect.ratio = 2  # For Sweden's proportions
     ) +
     labs(title = "LA model")
-
 county_correlation_plot <- ggplot(county_municipal_correlations, 
     aes(geometry=geometry, fill=srho)) + 
     geom_sf() + 
     theme_swemap2() + 
-    scale_fill_gradient2(name = "Spearmans rho",
-                        limits = c(-0.4, 0.4)) +
     theme(
         plot.title = element_text(size = 10, hjust = 0.5),
         plot.margin = margin(5, 5, 5, 5),
         aspect.ratio = 2
     ) +
     labs(title = "Oxenstierna/county model")
-
 combined_plot <- la_correlation_plot + county_correlation_plot + 
     plot_layout(guides = "collect", widths = c(1, 1)) & 
     theme(
         plot.title = element_text(size = 12, hjust = 0.5),
-        legend.position = "right",
-        legend.justification = "left"
+        legend.position = "right",  # Move legend to right
+        legend.justification = "left"  # Align legend with plots
     )
-
 combined_plot <- combined_plot + 
     plot_annotation(
         title = "Spearman's correlation coefficients for municipalities",
@@ -327,6 +311,33 @@ combined_plot <- combined_plot +
         )
     )
 combined_plot
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+la_mean <- mean(la_municipal_correlations$srho)
+county_mean <- mean(county_municipal_correlations$srho)
+ggplot() + 
+  geom_histogram(data = la_municipal_correlations, 
+                 aes(x = srho, y = after_stat(count/sum(count)), fill = "LA Municipal"), 
+                 alpha = 0.5, 
+                 position = "identity") +
+  geom_histogram(data = county_municipal_correlations, 
+                 aes(x = srho, y = after_stat(count/sum(count)), fill = "County Municipal"), 
+                 alpha = 0.5, 
+                 position = "identity") +
+  geom_vline(aes(xintercept = la_mean),
+             color = "blue",
+             linetype = "dashed", 
+             size = 1) +
+  geom_vline(aes(xintercept = county_mean),
+             color = "red",
+             linetype = "dashed", 
+             size = 1) +
+  labs(title = "Distribution of Spatial Correlations",
+       x = "Spatial Correlation (ρ)",
+       y = "Frequency",
+       fill = "Dataset") +
+  theme_minimal()
 ```
 
 Again while the map form of visualisation certainly is pleasing to the eye a histogram can't hurt.

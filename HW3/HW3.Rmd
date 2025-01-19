@@ -226,39 +226,45 @@ for(i in 1:nrow(cell_phone_data)) {
 
 ```
 
-Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have an NA value in a row post 1975 we replace it with -1, to give a numerical identification to future users of the data that that cell had missing data. 
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). We then forward fill with the last valid value in case a value is missing 
 
 ```{r}
-
 fix_kmb_problem <- function(row) {
   fixed_row = row
+  last_valid_value <- NA
+  
   for(i in 2:length(row)) {
     if(grepl("k",row[i])) {
       fixed_row[i] <- as.numeric(gsub("k","",row[i]))*1000
+      last_valid_value <- fixed_row[i]
     }
     else if(grepl("M",row[i])) {
       fixed_row[i] <- as.numeric(gsub("M","",row[i]))*1000*1000
+      last_valid_value <- fixed_row[i]
     }
     else if(grepl("B",row[i])) {
       fixed_row[i] <- as.numeric(gsub("B","",row[i]))*1000*1000*1000
+      last_valid_value <- fixed_row[i]
     }
-    if(!is.na(row[i]) && row[i] == "") {
-      fixed_row[i] = "missing"
+    else if(is.na(row[i]) || row[i] == "") {
+      fixed_row[i] = last_valid_value
     }
-    if(is.na(row[i])) {
-      fixed_row[i] = -1
+    else {
+      last_valid_value <- fixed_row[i]
     }
   }
   return(fixed_row)
-  
 }
 
 kmb_fixed <- pre_1975_na_fixed
-
 for(i in 1:nrow(cell_phone_data)) {
   kmb_fixed[i,] <- fix_kmb_problem(pre_1975_na_fixed[i,])
 }
-table_to_present <- kmb_fixed %>% select(iso.3, X2015, X2016, X2017, X2018, X2019) %>% filter(iso.3 %in% c("CHN","IND","USA","IDN","BRA"))
+
+table_to_present <- kmb_fixed %>% 
+  select(iso.3, X2015, X2016, X2017, X2018, X2019) %>% 
+  filter(iso.3 %in% c("CHN","IND","USA","IDN","BRA"))
+
 knitr::kable(table_to_present)
 ```
 

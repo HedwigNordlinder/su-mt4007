@@ -17,7 +17,7 @@ width_plot <- ggplot(data = iris_data, aes(x = sepal_width, y = petal_width, col
 length_plot + width_plot
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
 
 By visual inspection of the figure it looks like there is a linear relationship between sepal length and petal length for Iris-virginica and Iris-versicolor, and no relationship for Iris-setosa. The same holds for sepal width and petal width, except the relationship looks weaker.
 
@@ -32,7 +32,7 @@ petal_length_histogram <- ggplot(data = iris_data, aes(x = species, y = petal_le
 (sepal_width_histogram + sepal_length_histogram) / (petal_width_histogram + petal_length_histogram)
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
 
 From this figure we conclude that iris-setosa has lower variance in petal width and petal length
 
@@ -45,25 +45,25 @@ ggpairs(iris_data, aes(color=species, alpha = 0.5),columns=1:4, upper = list(con
 ```
 
 ```
-## plot: [1, 1] [=======>--------------------------------------------------------------------------------------------------------------------] 6% est: 0s
-## plot: [1, 2] [===============>------------------------------------------------------------------------------------------------------------] 12% est: 0s
-## plot: [1, 3] [======================>-----------------------------------------------------------------------------------------------------] 19% est: 0s
-## plot: [1, 4] [==============================>---------------------------------------------------------------------------------------------] 25% est: 0s
-## plot: [2, 1] [======================================>-------------------------------------------------------------------------------------] 31% est: 0s
-## plot: [2, 2] [=============================================>------------------------------------------------------------------------------] 38% est: 0s
-## plot: [2, 3] [=====================================================>----------------------------------------------------------------------] 44% est: 0s
-## plot: [2, 4] [=============================================================>--------------------------------------------------------------] 50% est: 0s
-## plot: [3, 1] [=====================================================================>------------------------------------------------------] 56% est: 0s
-## plot: [3, 2] [=============================================================================>----------------------------------------------] 62% est: 0s
-## plot: [3, 3] [====================================================================================>---------------------------------------] 69% est: 0s
-## plot: [3, 4] [============================================================================================>-------------------------------] 75% est: 0s
-## plot: [4, 1] [====================================================================================================>-----------------------] 81% est: 0s
-## plot: [4, 2] [===========================================================================================================>----------------] 88% est: 0s
-## plot: [4, 3] [===================================================================================================================>--------] 94% est: 0s
-## plot: [4, 4] [============================================================================================================================]100% est: 0s
+## plot: [1, 1] [===>-----------------------------------------------------] 6% est: 0s
+## plot: [1, 2] [======>--------------------------------------------------] 12% est: 0s
+## plot: [1, 3] [==========>----------------------------------------------] 19% est: 0s
+## plot: [1, 4] [=============>-------------------------------------------] 25% est: 0s
+## plot: [2, 1] [=================>---------------------------------------] 31% est: 0s
+## plot: [2, 2] [====================>------------------------------------] 38% est: 0s
+## plot: [2, 3] [========================>--------------------------------] 44% est: 0s
+## plot: [2, 4] [===========================>-----------------------------] 50% est: 0s
+## plot: [3, 1] [===============================>-------------------------] 56% est: 0s
+## plot: [3, 2] [===================================>---------------------] 62% est: 0s
+## plot: [3, 3] [======================================>------------------] 69% est: 0s
+## plot: [3, 4] [==========================================>--------------] 75% est: 0s
+## plot: [4, 1] [=============================================>-----------] 81% est: 0s
+## plot: [4, 2] [=================================================>-------] 88% est: 0s
+## plot: [4, 3] [====================================================>----] 94% est: 0s
+## plot: [4, 4] [=========================================================]100% est: 0s
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
 
 From this plot we can draw the conclusion that sepal length and width has a positive linear relationship for all species, petal length and petal width has a general linear trend that looks similar across all species and that the variance of petal length and width is low for Iris Setosa
 
@@ -140,7 +140,8 @@ monthly_distribution <- artportalen %>% filter(Artnamn %in% most_common_species$
 ```
 
 ```
-## `summarise()` has grouped output by 'Artnamn'. You can override using the `.groups` argument.
+## `summarise()` has grouped output by 'Artnamn'. You can override using the `.groups`
+## argument.
 ```
 
 ``` r
@@ -153,7 +154,7 @@ talgoxe_plot <- ggplot(talgoxe_distr, aes(x = month, y = count)) + geom_bar(stat
 plot_grid(blames_plot, koltrast_plot, talgoxe_plot, ncol = 3)
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
 
 Grönsiska, Sothöna and Gräsand are the three most common species. The rarest species are seen in the table rarest_species.
 
@@ -170,7 +171,7 @@ pdf = dpois(k,mean(sothona))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 ``` r
 hist(gronsiska, prob = TRUE)
@@ -179,7 +180,7 @@ pdf = dpois(k,mean(gronsiska))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-2.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-2.png)
 
 ``` r
 hist(grasand, prob = TRUE)
@@ -188,7 +189,7 @@ pdf = dpois(k,mean(grasand))
 points(k, pdf, col="red")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-3.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-3.png)
 
 A Poission distribution is a poor fit for Sothöna, Grönsiska, Gräsand, probably since there is a large concentration at n = 1 for observations and a large tail. We will also investigate which species are the most overrepresented in Stockholm
 
@@ -257,7 +258,7 @@ sorted_species_counts$first_digit <- floor(sorted_species_counts$count / 10^(flo
 hist(sorted_species_counts$first_digit)
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 
 We do not obtain a Benford distribution, despite the values having a range spanning several orders of magnitude. Perhaps people hap-hazardly just put in "1000" for "A huge flock"
 
@@ -466,7 +467,7 @@ ggroc(roc(testing_data$stroke, predictions))
 ## Setting direction: controls < cases
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 
 Our ROC curve looks good but not great. Also, since we have major class imbalance (minority class being strokes) we probably have an even worse precision-recall metric :/
 
@@ -496,39 +497,46 @@ for(i in 1:nrow(cell_phone_data)) {
 }
 ```
 
-Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). If we have an NA value in a row post 1975 we replace it with -1, to give a numerical identification to future users of the data that that cell had missing data. 
+Now we need to fix the "k, M, B" problem and add "missing" when an entry is missing (instead of null). We then forward fill with the last valid value in case a value is missing 
 
 
 ``` r
 fix_kmb_problem <- function(row) {
   fixed_row = row
+  last_valid_value <- NA
+  
   for(i in 2:length(row)) {
     if(grepl("k",row[i])) {
       fixed_row[i] <- as.numeric(gsub("k","",row[i]))*1000
+      last_valid_value <- fixed_row[i]
     }
     else if(grepl("M",row[i])) {
       fixed_row[i] <- as.numeric(gsub("M","",row[i]))*1000*1000
+      last_valid_value <- fixed_row[i]
     }
     else if(grepl("B",row[i])) {
       fixed_row[i] <- as.numeric(gsub("B","",row[i]))*1000*1000*1000
+      last_valid_value <- fixed_row[i]
     }
-    if(!is.na(row[i]) && row[i] == "") {
-      fixed_row[i] = "missing"
+    else if(is.na(row[i]) || row[i] == "") {
+      fixed_row[i] = last_valid_value
     }
-    if(is.na(row[i])) {
-      fixed_row[i] = -1
+    else {
+      last_valid_value <- fixed_row[i]
     }
   }
   return(fixed_row)
-  
 }
 
 kmb_fixed <- pre_1975_na_fixed
-
 for(i in 1:nrow(cell_phone_data)) {
   kmb_fixed[i,] <- fix_kmb_problem(pre_1975_na_fixed[i,])
 }
-table_to_present <- kmb_fixed %>% select(iso.3, X2015, X2016, X2017, X2018, X2019) %>% filter(iso.3 %in% c("CHN","IND","USA","IDN","BRA"))
+
+table_to_present <- kmb_fixed %>% 
+  select(iso.3, X2015, X2016, X2017, X2018, X2019) %>% 
+  filter(iso.3 %in% c("CHN","IND","USA","IDN","BRA"))
+
 knitr::kable(table_to_present)
 ```
 
@@ -536,10 +544,10 @@ knitr::kable(table_to_present)
 
 |iso.3 |X2015    |X2016    |X2017    |X2018    |X2019    |
 |:-----|:--------|:--------|:--------|:--------|:--------|
-|BRA   |2.58e+08 |2.44e+08 |2.18e+08 |2.07e+08 |missing  |
+|BRA   |2.58e+08 |2.44e+08 |2.18e+08 |2.07e+08 |2.07e+08 |
 |CHN   |1.29e+09 |1.36e+09 |1.47e+09 |1.65e+09 |1.73e+09 |
 |IDN   |3.39e+08 |3.86e+08 |4.35e+08 |3.19e+08 |3.45e+08 |
 |IND   |1e+09    |1.13e+09 |1.17e+09 |1.18e+09 |1.15e+09 |
-|USA   |3.82e+08 |3.96e+08 |4e+08    |4.22e+08 |missing  |
+|USA   |3.82e+08 |3.96e+08 |4e+08    |4.22e+08 |4.22e+08 |
 
 Now we have cleaned the data
